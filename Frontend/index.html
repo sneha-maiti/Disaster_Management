@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AETHER-X // Autonomous Planetary Resilience Network</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="css/design-system.css">
+  <link rel="stylesheet" href="css/components.css">
+</head>
+<body class="bg-black text-slate-100 min-h-screen flex flex-col font-sans select-none relative">
+
+  <!-- ═══ HEADER ═══ -->
+  <header class="h-16 border-b border-cyan-500/15 bg-black/90 backdrop-blur-md px-6 md:px-10 flex items-center justify-between z-50 fixed top-0 left-0 right-0">
+    <div class="flex items-center gap-3 cursor-pointer" id="header-logo-home">
+      <div class="w-9 h-9 rounded-lg bg-cyan-950/60 border border-cyan-400/60 flex items-center justify-center text-cyan-400 font-mono font-bold text-sm shadow-[0_0_15px_rgba(0,163,255,0.35)]">Æ</div>
+      <span class="font-editorial text-xl font-bold tracking-[0.15em] text-white">AETHER-X</span>
+    </div>
+
+    <nav class="hidden md:flex items-center gap-2" id="top-nav-links">
+      <div class="screenshot-nav-link active" data-tab="tab-view-overview">01 OVERVIEW</div>
+      <div class="screenshot-nav-link" data-tab="tab-view-matrix">02 NEURAL MATRIX</div>
+      <div class="screenshot-nav-link" data-tab="tab-view-command">03 COMMAND CENTER</div>
+      <div class="screenshot-nav-link" data-tab="tab-view-map">04 GLOBAL MAP</div>
+      <div class="screenshot-nav-link" data-tab="tab-view-ai-vision">05 AI VISION</div>
+    </nav>
+
+    <div class="flex items-center gap-4">
+      <div class="status-pill-operational hidden sm:flex">
+        <span class="pulse-dot"></span>
+        <span>SYSTEM STATUS: OPERATIONAL</span>
+      </div>
+      <button class="trigger-sos-modal sm:hidden px-3 py-1.5 rounded-full bg-rose-950/60 border border-rose-500/50 text-rose-400 font-mono text-xs font-bold">SOS</button>
+      <button id="mobile-menu-toggle" class="md:hidden text-cyan-400 p-2">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+      </button>
+    </div>
+  </header>
+
+  <main class="pt-16 flex-1 flex flex-col relative z-10">
+
+    <!-- ═══ VIEW 1: HERO OVERVIEW (Screenshot 1) ═══ -->
+    <div id="tab-view-overview" class="screenshot-view-tab active min-h-[calc(100vh-4rem)] flex flex-col justify-between p-6 md:p-8 relative overflow-hidden">
+      <div id="aether-bg-canvas-wrap" class="absolute inset-0 z-0 pointer-events-none"></div>
+
+      <div class="hero-spatial-grid relative z-10">
+        <!-- Left: Hero Copy -->
+        <div class="space-y-5">
+          <div class="font-mono text-[10px] text-cyan-400 tracking-[0.25em] uppercase flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_6px_#00A3FF]"></span>
+            EARTH IS NOT ALONE. RESILIENCE IS.
+          </div>
+          <h1 class="hero-display-title">AUTONOMOUS<br>PLANETARY<br>RESILIENCE</h1>
+          <p class="text-slate-400 text-sm max-w-md leading-relaxed">
+            Aether-X is an autonomous planetary resilience network designed to detect, decide, and defend—before disaster becomes irreversible.
+          </p>
+          <div class="flex flex-wrap items-center gap-4 pt-1">
+            <button class="trigger-sos-modal btn-sos-trigger">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+              TRIGGER GLOBAL SOS
+            </button>
+            <button class="nav-switch-btn btn-command-init" data-target-tab="tab-view-command">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+              INITIALIZE COMMAND
+            </button>
+          </div>
+          <div class="inline-flex items-center gap-4 p-4 rounded-lg glass-panel-card font-mono text-xs mt-2">
+            <div>
+              <div class="text-[10px] text-slate-500 tracking-wider">GLOBAL READINESS</div>
+              <div class="text-2xl font-bold text-white mt-0.5">87.6%</div>
+            </div>
+            <svg class="widget-sparkline w-28 text-cyan-400" viewBox="0 0 100 30" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M0,25 Q15,5 30,20 T60,10 T90,22 T100,5"></path></svg>
+          </div>
+        </div>
+
+        <!-- Center: 3D Globe -->
+        <div class="hero-globe-stage">
+          <div id="globe-container"></div>
+        </div>
+
+        <!-- Right: Telemetry Stack -->
+        <div class="space-y-3">
+          <div class="glass-panel-card p-4">
+            <div class="flex items-center justify-between font-mono text-[10px] mb-3">
+              <span class="text-slate-500 font-bold tracking-wider">THREAT MONITOR</span>
+              <span class="text-slate-600">›</span>
+            </div>
+            <div class="flex items-center gap-3 mb-2">
+              <div class="w-9 h-9 rounded-lg bg-rose-950/50 border border-rose-500/40 flex items-center justify-center">
+                <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"></path></svg>
+              </div>
+              <div>
+                <div class="font-mono text-xs font-bold text-white">SOLAR FLARE CLASS M2.4</div>
+                <div class="font-mono text-[10px] text-rose-400">ETA <span class="font-bold" id="threat-eta">17m 42s</span></div>
+              </div>
+            </div>
+            <svg class="widget-sparkline text-rose-500" viewBox="0 0 200 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M0,12 Q25,2 50,18 T100,4 T150,20 T200,8"></path></svg>
+          </div>
+
+          <div class="glass-panel-card p-4">
+            <div class="flex items-center justify-between font-mono text-[10px] mb-3">
+              <span class="text-slate-500 font-bold tracking-wider">NETWORK NODES</span>
+              <span class="text-slate-600">›</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-cyan-950/50 border border-cyan-400/40 flex items-center justify-center text-cyan-400 text-lg">⬡</div>
+              <div class="flex-1">
+                <div class="font-mono text-lg font-bold text-white">7,842</div>
+                <div class="font-mono text-[10px] text-cyan-400">ACTIVE</div>
+              </div>
+            </div>
+            <svg class="widget-sparkline text-cyan-400 mt-2" viewBox="0 0 200 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M0,20 Q30,8 60,16 T120,6 T180,18 T200,10" fill="rgba(0,163,255,0.1)"></path><path d="M0,20 Q30,8 60,16 T120,6 T180,18 T200,10"></path></svg>
+          </div>
+
+          <div class="glass-panel-card p-4">
+            <div class="flex items-center justify-between font-mono text-[10px] mb-3">
+              <span class="text-slate-500 font-bold tracking-wider">SATELLITES</span>
+              <span class="text-slate-600">›</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-cyan-950/50 border border-cyan-400/40 flex items-center justify-center text-cyan-400">🛰</div>
+              <div class="flex-1">
+                <div class="font-mono text-lg font-bold text-white">512</div>
+                <div class="font-mono text-[10px] text-cyan-400">ONLINE</div>
+              </div>
+            </div>
+            <svg class="widget-sparkline text-cyan-400 mt-2" viewBox="0 0 200 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M0,18 Q40,6 80,14 T160,4 T200,12"></path></svg>
+          </div>
+
+          <div class="glass-panel-card p-4">
+            <div class="flex items-center justify-between font-mono text-[10px] mb-3">
+              <span class="text-slate-500 font-bold tracking-wider">AI PREDICTION</span>
+              <span class="text-slate-600">›</span>
+            </div>
+            <div class="flex items-center gap-4">
+              <div class="ai-donut-ring">92%</div>
+              <div class="font-mono text-[10px] space-y-0.5">
+                <div class="text-slate-300 font-bold">CONFIDENCE</div>
+                <div class="text-slate-500">HIGH PROBABILITY</div>
+                <div class="text-emerald-400 font-bold">STABILITY</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Dock -->
+      <div class="relative z-10 flex flex-col items-center gap-3 mt-6">
+        <div class="floating-dock-pill">
+          <div class="dock-icon-item active" data-tab="tab-view-overview" title="Overview">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="1.5"/><path stroke-width="1.5" d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg>
+          </div>
+          <div class="dock-icon-item" data-tab="tab-view-matrix" title="Neural Matrix">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke-width="1.5"/><path stroke-width="1.5" d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+          </div>
+          <div class="dock-icon-item" data-tab="tab-view-map" title="Global Map">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.5" d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <div class="dock-icon-item" data-tab="tab-view-ai-vision" title="AI Vision">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.5" d="M3 12h2M7 8v8M11 5v14M15 9v6M19 7v10M21 12h-2"/></svg>
+          </div>
+          <div class="dock-icon-item trigger-sos-modal" title="Emergency SOS">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.5" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+        </div>
+        <div class="w-full flex items-center justify-between font-mono text-[10px] text-slate-600 px-2">
+          <span>AETHER-X COMMAND INTERFACE v2.7.4</span>
+          <span class="flex items-center gap-2">
+            <span id="overview-utc-time">UTC 2025-05-24 14:32:18</span>
+            <span class="text-emerald-400">● Signal 99%</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW 2: NEURAL MATRIX (Screenshot 3) ═══ -->
+    <div id="tab-view-matrix" class="screenshot-view-tab p-6 md:p-10 max-w-7xl mx-auto w-full">
+      <div class="matrix-section-frame">
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6">
+          <div>
+            <div class="flex items-center gap-3 mb-2">
+              <span class="w-8 h-8 rounded border border-cyan-400/60 flex items-center justify-center font-mono font-bold text-xs text-cyan-400">02</span>
+              <h2 class="font-editorial text-3xl md:text-4xl font-bold text-white tracking-wider">THE NEURAL MATRIX</h2>
+            </div>
+            <p class="font-mono text-[10px] text-cyan-400 tracking-[0.2em] uppercase">CORE INTELLIGENCE. REAL-WORLD IMPACT.</p>
+          </div>
+          <p class="text-slate-500 text-xs md:text-sm max-w-sm">
+            Aether-X leverages a multi-layered AI system to sense, analyze, decide, and act—faster than anyone, anywhere.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="matrix-feature-card hud-panel">
+          <span class="hud-br-bl"></span><span class="hud-br-br"></span>
+          <div class="matrix-card-content">
+            <div class="flex items-center gap-3">
+              <div class="matrix-icon-ring"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.5" d="M12 2L2 7l10 5 10-5-10-5z"/></svg></div>
+              <div><span class="font-mono text-[10px] text-cyan-400 font-bold">01</span><h3 class="font-editorial text-lg font-bold text-white">AUTONOMOUS SOS DISPATCH</h3></div>
+            </div>
+            <p class="text-slate-400 text-xs mt-4 max-w-xs">AI-powered drones are automatically deployed to distress zones based on real-time threat analysis.</p>
+            <button class="trigger-sos-modal text-cyan-400 font-mono text-[10px] font-bold flex items-center gap-2 mt-4 hover:underline">LEARN MORE →</button>
+          </div>
+          <div class="matrix-card-visual">
+            <img src="https://images.unsplash.com/photo-1473968512647-3e447244af8f?auto=format&fit=crop&w=600&q=80" alt="Drone Dispatch">
+          </div>
+        </div>
+
+        <div class="matrix-feature-card hud-panel">
+          <span class="hud-br-bl"></span><span class="hud-br-br"></span>
+          <div class="matrix-card-content">
+            <div class="flex items-center gap-3">
+              <div class="matrix-icon-ring"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="1.5"/><circle cx="12" cy="12" r="3" stroke-width="1.5"/></svg></div>
+              <div><span class="font-mono text-[10px] text-cyan-400 font-bold">02</span><h3 class="font-editorial text-lg font-bold text-white">PLANETARY SEISMIC RADAR</h3></div>
+            </div>
+            <p class="text-slate-400 text-xs mt-4 max-w-xs">Global seismic monitoring with AI pattern recognition for early earthquake and disaster prediction.</p>
+            <button class="nav-switch-btn text-cyan-400 font-mono text-[10px] font-bold flex items-center gap-2 mt-4 hover:underline" data-target-tab="tab-view-map">LEARN MORE →</button>
+          </div>
+          <div class="matrix-card-visual">
+            <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80" alt="Seismic Globe">
+          </div>
+        </div>
+
+        <div class="matrix-feature-card hud-panel">
+          <span class="hud-br-bl"></span><span class="hud-br-br"></span>
+          <div class="matrix-card-content">
+            <div class="flex items-center gap-3">
+              <div class="matrix-icon-ring"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.5" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/><circle cx="12" cy="11" r="3" stroke-width="1.5"/></svg></div>
+              <div><span class="font-mono text-[10px] text-cyan-400 font-bold">03</span><h3 class="font-editorial text-lg font-bold text-white">ADAPTIVE EVACUATION ROUTING</h3></div>
+            </div>
+            <p class="text-slate-400 text-xs mt-4 max-w-xs">Real-time route optimization adapts to hazards, congestion, and environmental conditions to save more lives.</p>
+            <button class="nav-switch-btn text-cyan-400 font-mono text-[10px] font-bold flex items-center gap-2 mt-4 hover:underline" data-target-tab="tab-view-map">LEARN MORE →</button>
+          </div>
+          <div class="matrix-card-visual relative">
+            <img src="https://images.unsplash.com/photo-1477959856237-d9bfbf279f55?auto=format&fit=crop&w=600&q=80" alt="Evacuation Route">
+            <div class="absolute top-3 right-3 glass-panel p-2 font-mono text-[8px] text-cyan-300 border-cyan-400/30 text-right z-10">
+              <div>SAFE ROUTE ETA <span class="font-bold">4.2 MIN</span></div>
+              <div class="text-emerald-400">POPULATION IMPACT REDUCED BY 68%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="matrix-feature-card hud-panel">
+          <span class="hud-br-bl"></span><span class="hud-br-br"></span>
+          <div class="matrix-card-content">
+            <div class="flex items-center gap-3">
+              <div class="matrix-icon-ring"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg></div>
+              <div><span class="font-mono text-[10px] text-cyan-400 font-bold">04</span><h3 class="font-editorial text-lg font-bold text-white">AI DAMAGE DETECTION</h3></div>
+            </div>
+            <p class="text-slate-400 text-xs mt-4 max-w-xs">Computer vision models instantly detect structural damage and assess impact using satellite and drone imagery.</p>
+            <button class="nav-switch-btn text-cyan-400 font-mono text-[10px] font-bold flex items-center gap-2 mt-4 hover:underline" data-target-tab="tab-view-ai-vision">LEARN MORE →</button>
+          </div>
+          <div class="matrix-card-visual relative">
+            <img src="https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?auto=format&fit=crop&w=600&q=80" alt="AI Damage">
+            <div class="absolute top-3 right-3 glass-panel p-2 font-mono text-[8px] border-rose-500/40 text-right z-10">
+              <div class="text-rose-500 font-bold">DAMAGE LEVEL CRITICAL</div>
+              <div class="text-cyan-400">CONFIDENCE 98.7%</div>
+              <div class="text-slate-400">STRUCTURAL INTEGRITY <span class="text-rose-400 font-bold">12%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between border-t border-cyan-500/15 pt-6 mt-8 font-mono text-xs text-slate-500">
+        <div class="flex items-center gap-3">
+          <span class="text-cyan-400 font-bold text-[10px] tracking-wider">NEURAL MATRIX ACTIVE</span>
+          <div class="bottom-waveform-feed"><span></span><span style="animation-delay:0.2s"></span><span style="animation-delay:0.4s"></span><span style="animation-delay:0.1s"></span><span style="animation-delay:0.3s"></span></div>
+        </div>
+        <div class="hidden md:block text-[10px] tracking-[0.15em]">INTELLIGENCE THAT PROTECTS. SYSTEMS THAT SAVE.</div>
+        <div class="text-cyan-400 font-bold font-editorial">AETHER-X</div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW 3: COMMAND CENTER (Screenshot 4) ═══ -->
+    <div id="tab-view-command" class="screenshot-view-tab">
+      <div class="command-center-layout">
+        <aside class="command-sidebar hidden lg:flex">
+          <div class="command-sidebar-item active" title="Overview"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" stroke-width="1.5"/><rect x="14" y="3" width="7" height="7" stroke-width="1.5"/><rect x="3" y="14" width="7" height="7" stroke-width="1.5"/><rect x="14" y="14" width="7" height="7" stroke-width="1.5"/></svg></div>
+          <div class="command-sidebar-item" title="Threat Intel"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.5" d="M12 9v2m0 4h.01"/></svg></div>
+          <div class="command-sidebar-item trigger-sos-modal" title="SOS"><svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.5" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="command-sidebar-item" title="Missions"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="1.5" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg></div>
+          <div class="command-sidebar-item" title="Systems"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke-width="1.5"/><path stroke-width="1.5" d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83"/></svg></div>
+          <div class="mt-auto mb-4">
+            <div class="ai-director-orb"></div>
+            <div class="font-mono text-[8px] text-cyan-400 text-center mt-2 tracking-wider">AI DIRECTOR</div>
+          </div>
+        </aside>
+
+        <div class="command-main-grid">
+          <!-- Header -->
+          <div class="command-header-bar">
+            <div class="flex items-center gap-4">
+              <span class="font-editorial text-lg font-bold tracking-wider">AETHER-X</span>
+              <span class="font-mono text-[10px] text-slate-500">AI DISASTER MANAGEMENT COMMAND CENTER</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="status-pill-critical px-3 py-1 rounded-full font-mono text-[10px] font-bold">GLOBAL STATUS — CRITICAL</span>
+              <span class="status-pill-operational px-3 py-1 rounded-full font-mono text-[10px] font-bold" style="border-color:rgba(0,163,255,0.4);color:#00A3FF;background:rgba(4,20,40,0.85)">SYSTEMS NOMINAL</span>
+              <span class="font-mono text-[10px] text-slate-500" id="command-utc-time"></span>
+            </div>
+          </div>
+
+          <!-- Left Column -->
+          <div class="space-y-3 overflow-y-auto">
+            <div class="glass-panel-card p-4 hud-panel">
+              <span class="hud-br-bl"></span><span class="hud-br-br"></span>
+              <div class="font-mono text-[10px] text-slate-500 font-bold tracking-wider mb-3">THREAT MATRIX</div>
+              <div class="flex items-center gap-4">
+                <div class="threat-donut"><span class="threat-donut-value">24</span></div>
+                <div class="space-y-1 font-mono text-[10px] flex-1">
+                  <div class="flex justify-between"><span class="text-rose-500">● Critical</span><span class="text-white font-bold">6</span></div>
+                  <div class="flex justify-between"><span class="text-amber-400">● High</span><span class="text-white font-bold">8</span></div>
+                  <div class="flex justify-between"><span class="text-cyan-400">● Moderate</span><span class="text-white font-bold">7</span></div>
+                  <div class="flex justify-between"><span class="text-emerald-400">● Low</span><span class="text-white font-bold">3</span></div>
+                </div>
+              </div>
+              <div class="chart-container-sm mt-3"><canvas id="chart-threat-confidence"></canvas></div>
+            </div>
+
+            <div class="glass-panel-card p-4 hud-panel">
+              <span class="hud-br-bl"></span><span class="hud-br-br"></span>
+              <div class="font-mono text-[10px] text-slate-500 font-bold tracking-wider mb-3">LIVE ALERTS</div>
+              <div class="space-y-0">
+                <div class="alert-list-item"><div><div class="text-white font-bold">Cyclone Forming</div><div class="text-slate-500">Bay of Bengal</div></div><span class="text-slate-500">2m ago</span></div>
+                <div class="alert-list-item"><div><div class="text-white font-bold">Mega Quake</div><div class="text-slate-500">Pacific Rim</div></div><span class="text-rose-400 font-bold">NOW</span></div>
+                <div class="alert-list-item"><div><div class="text-white font-bold">Tsunami Warning</div><div class="text-slate-500">Japan Coast</div></div><span class="text-slate-500">5m ago</span></div>
+                <div class="alert-list-item"><div><div class="text-white font-bold">Grid Failure</div><div class="text-slate-500">Eastern US</div></div><span class="text-slate-500">12m ago</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Center: Globe + Impact Bar -->
+          <div class="flex flex-col">
+            <div class="command-globe-stage flex-1 relative">
+              <div id="command-globe-container"></div>
+              <div class="disaster-callout" style="top:25%;left:55%">MEGA QUAKE<br><span class="text-rose-400">Mw 8.4</span></div>
+              <div class="disaster-callout" style="top:40%;left:70%">TSUNAMI WARNING<br><span class="text-amber-400">Wave 12m</span></div>
+              <div class="disaster-callout" style="top:55%;left:30%">CYCLONE ALERT<br><span class="text-rose-400">Cat 4</span></div>
+            </div>
+            <div class="impact-stats-bar">
+              <div class="impact-stat-item"><span class="impact-stat-value text-cyan-400">18</span><span class="impact-stat-label">ACTIVE MISSIONS</span></div>
+              <div class="impact-stat-item"><span class="impact-stat-value text-amber-400">2.7B</span><span class="impact-stat-label">POPULATION AT RISK</span></div>
+              <div class="impact-stat-item"><span class="impact-stat-value text-rose-400">$4.2T</span><span class="impact-stat-label">ECONOMIC IMPACT</span></div>
+              <div class="impact-stat-item"><span class="impact-stat-value text-emerald-400">56</span><span class="impact-stat-label">SOS SIGNALS</span></div>
+            </div>
+          </div>
+
+          <!-- Right Column -->
+          <div class="space-y-3 overflow-y-auto">
+            <div class="glass-panel-card p-4">
+              <div class="font-mono text-[10px] text-slate-500 font-bold tracking-wider mb-3">SYSTEM TELEMETRY</div>
+              <div class="grid grid-cols-2 gap-2">
+                <div class="telemetry-stat"><div class="telemetry-stat-icon">🛰</div><div class="telemetry-stat-value">512</div><div class="telemetry-stat-label">SATELLITES</div></div>
+                <div class="telemetry-stat"><div class="telemetry-stat-icon">📡</div><div class="telemetry-stat-value">7.8K</div><div class="telemetry-stat-label">SENSORS</div></div>
+                <div class="telemetry-stat"><div class="telemetry-stat-icon">🧠</div><div class="telemetry-stat-value">24</div><div class="telemetry-stat-label">AI MODELS</div></div>
+                <div class="telemetry-stat"><div class="telemetry-stat-icon">⚡</div><div class="telemetry-stat-value">2.4TB/s</div><div class="telemetry-stat-label">DATA INGEST</div></div>
+              </div>
+            </div>
+
+            <div class="glass-panel-card p-4">
+              <div class="font-mono text-[10px] text-slate-500 font-bold tracking-wider mb-3">ACTIVE MISSIONS</div>
+              <div class="space-y-3 font-mono text-[10px]">
+                <div><div class="flex justify-between text-white"><span>Operation Nightfall</span><span class="text-cyan-400">78%</span></div><div class="mission-progress-track"><div class="mission-progress-fill" style="width:78%"></div></div></div>
+                <div><div class="flex justify-between text-white"><span>Shieldwall Protocol</span><span class="text-cyan-400">62%</span></div><div class="mission-progress-track"><div class="mission-progress-fill" style="width:62%"></div></div></div>
+                <div><div class="flex justify-between text-white"><span>Eagle Eye Surveillance</span><span class="text-cyan-400">91%</span></div><div class="mission-progress-track"><div class="mission-progress-fill" style="width:91%"></div></div></div>
+              </div>
+            </div>
+
+            <div class="glass-panel-card p-4">
+              <div class="font-mono text-[10px] text-slate-500 font-bold tracking-wider mb-2">48-HR PREDICTION MODEL</div>
+              <div class="chart-container-md"><canvas id="chart-prediction"></canvas></div>
+            </div>
+          </div>
+
+          <!-- Bottom Row -->
+          <div class="glass-panel-card p-4" style="grid-column:1/-1">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <div class="font-mono text-[10px] text-slate-500 font-bold tracking-wider mb-2">SYSTEM CONSOLE</div>
+                <div class="system-console" id="admin-activity-terminal"></div>
+              </div>
+              <div>
+                <div class="font-mono text-[10px] text-slate-500 font-bold tracking-wider mb-3">RESOURCE ALLOCATION</div>
+                <div class="space-y-2 font-mono text-[10px]">
+                  <div><div class="flex justify-between text-slate-400 mb-1"><span>AIR UNITS</span><span class="text-white">72%</span></div><div class="resource-bar-track"><div class="resource-bar-fill air" style="width:72%"></div></div></div>
+                  <div><div class="flex justify-between text-slate-400 mb-1"><span>GROUND UNITS</span><span class="text-white">58%</span></div><div class="resource-bar-track"><div class="resource-bar-fill ground" style="width:58%"></div></div></div>
+                  <div><div class="flex justify-between text-slate-400 mb-1"><span>NAVAL UNITS</span><span class="text-white">41%</span></div><div class="resource-bar-track"><div class="resource-bar-fill naval" style="width:41%"></div></div></div>
+                  <div><div class="flex justify-between text-slate-400 mb-1"><span>MEDICAL UNITS</span><span class="text-white">89%</span></div><div class="resource-bar-track"><div class="resource-bar-fill medical" style="width:89%"></div></div></div>
+                </div>
+              </div>
+              <div>
+                <div class="font-mono text-[10px] text-slate-500 font-bold tracking-wider mb-3">COMMUNICATIONS</div>
+                <div class="comm-channel"><span class="text-slate-400">Field Units</span><span class="flex items-center gap-2"><span class="comm-dot"></span><span class="text-white font-bold">1,892</span></span></div>
+                <div class="comm-channel"><span class="text-slate-400">Government</span><span class="flex items-center gap-2"><span class="comm-dot"></span><span class="text-white font-bold">48</span></span></div>
+                <div class="comm-channel"><span class="text-slate-400">NGO Partners</span><span class="flex items-center gap-2"><span class="comm-dot"></span><span class="text-white font-bold">127</span></span></div>
+                <div class="comm-channel"><span class="text-slate-400">Satellite Uplinks</span><span class="flex items-center gap-2"><span class="comm-dot"></span><span class="text-white font-bold">128</span></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW 4: GLOBAL MISSION MAP (Screenshot 5) ═══ -->
+    <div id="tab-view-map" class="screenshot-view-tab p-6 md:p-10 max-w-7xl mx-auto w-full space-y-6">
+      <div class="flex flex-col md:flex-row md:items-end justify-between border-b border-cyan-500/15 pb-4 gap-4">
+        <div>
+          <h2 class="font-editorial text-2xl md:text-3xl font-bold text-white tracking-wider">04. INTERACTIVE GLOBAL MISSION CONTROL MAP</h2>
+          <p class="font-mono text-[10px] text-cyan-400 tracking-[0.15em] uppercase mt-1">REAL-TIME PLANETARY SITUATION AWARENESS & RESPONSE COORDINATION</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+          <span class="font-mono text-[10px] font-bold text-rose-400 tracking-wider">LIVE GLOBAL FEED ACTIVE</span>
+        </div>
+      </div>
+
+      <div class="relative w-full h-[560px] rounded-xl overflow-hidden border border-cyan-500/25 shadow-[0_0_50px_rgba(0,0,0,0.9)]">
+        <div id="mission-real-map" class="w-full h-full z-0"></div>
+        <div class="absolute top-4 right-4 z-20 w-72 glass-panel-card p-4 space-y-3 max-h-[520px] overflow-y-auto font-mono text-xs hud-panel">
+          <span class="hud-br-bl"></span><span class="hud-br-br"></span>
+          <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+            <div><div class="font-bold text-white text-[11px]">MISSION CONTROL FEED</div><div class="text-[9px] text-cyan-400">LIVE TELEMETRY</div></div>
+          </div>
+          <div class="space-y-2 text-[10px]">
+            <div class="flex justify-between"><span class="text-slate-400">🛰 SATELLITE UPLINKS</span><span class="text-cyan-400 font-bold">128 ACTIVE</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">🛸 DRONE SWARMS</span><span class="text-cyan-400 font-bold">342 ACTIVE</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">🚒 GROUND UNITS</span><span class="text-emerald-400 font-bold">1,892 DEPLOYED</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">📍 EVACUATION CORRIDORS</span><span class="text-emerald-400 font-bold">18 ACTIVE</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">👥 POPULATION AT RISK</span><span class="text-amber-400 font-bold">2.7B PEOPLE</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">🆘 S.O.S SIGNALS</span><span class="text-rose-500 font-bold">56 RECEIVED</span></div>
+            <div class="flex justify-between"><span class="text-slate-400">⏱ RESPONSE TIME (AVG)</span><span class="text-cyan-400 font-bold">02:37 MIN</span></div>
+          </div>
+          <div class="border-t border-slate-800 pt-3 space-y-2">
+            <div class="font-bold text-white text-[10px] mb-2">MAP FILTERS</div>
+            <div class="map-switch-row"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-rose-500"></span>THREAT ZONES</span><input type="checkbox" class="toggle-switch-input" checked></div>
+            <div class="map-switch-row"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-500"></span>SOS BEACONS</span><input type="checkbox" class="toggle-switch-input" checked></div>
+            <div class="map-switch-row"><span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400"></span>EVACUATION CORRIDORS</span><input type="checkbox" class="toggle-switch-input" checked></div>
+            <div class="map-switch-row"><span class="text-slate-400">SATELLITE COVERAGE</span><input type="checkbox" class="toggle-switch-input"></div>
+            <div class="map-switch-row"><span class="text-slate-400">WEATHER LAYER</span><input type="checkbox" class="toggle-switch-input"></div>
+          </div>
+          <button id="btn-refresh-map-data" class="w-full py-2 bg-cyan-950/80 border border-cyan-400/40 text-cyan-300 font-mono text-[10px] font-bold rounded hover:bg-cyan-900/60 transition-all">🔄 REFRESH DATA</button>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+        <div class="md:col-span-3 glass-panel-card p-4 flex flex-col items-center text-center font-mono hud-panel">
+          <span class="hud-br-bl"></span><span class="hud-br-br"></span>
+          <div class="text-[10px] text-slate-500 uppercase tracking-wider mb-2">THREAT LEVEL INDICATOR</div>
+          <div class="speedometer-gauge mb-2"></div>
+          <div class="text-2xl font-bold text-rose-500">9.8 <span class="text-xs text-slate-500">/10</span></div>
+          <div class="text-xs font-bold text-rose-400 tracking-widest mt-1">CRITICAL</div>
+        </div>
+        <div class="md:col-span-5 glass-panel-card p-4 font-mono text-[10px] hud-panel">
+          <span class="hud-br-bl"></span><span class="hud-br-br"></span>
+          <div class="text-slate-500 font-bold mb-4 uppercase tracking-wider">MISSION TIMELINE</div>
+          <div class="flex items-center justify-between text-center">
+            <div class="timeline-node-item"><div class="timeline-dot bg-rose-500"></div><div class="text-rose-400 font-bold mt-2">SOLAR FLARE</div><div class="text-slate-600 text-[8px]">MAY 28, 12:17</div></div>
+            <div class="timeline-node-item"><div class="timeline-dot bg-rose-500"></div><div class="text-rose-400 font-bold mt-2">COMPROMISED</div><div class="text-slate-600 text-[8px]">MAY 28, 13:02</div></div>
+            <div class="timeline-node-item"><div class="timeline-dot bg-amber-500"></div><div class="text-amber-400 font-bold mt-2">GLOBAL ALERT</div><div class="text-slate-600 text-[8px]">MAY 28, 13:15</div></div>
+            <div class="timeline-node-item"><div class="timeline-dot bg-emerald-400"></div><div class="text-emerald-400 font-bold mt-2">EVACUATION</div><div class="text-slate-600 text-[8px]">MAY 28, 13:42</div></div>
+            <div class="timeline-node-item"><div class="timeline-dot bg-emerald-400"></div><div class="text-emerald-400 font-bold mt-2">STABILIZED</div><div class="text-slate-600 text-[8px]">MAY 28, 14:11</div></div>
+          </div>
+        </div>
+        <div class="md:col-span-4 glass-panel-card p-4 font-mono text-[10px] hud-panel">
+          <span class="hud-br-bl"></span><span class="hud-br-br"></span>
+          <div class="text-slate-500 font-bold mb-3 uppercase tracking-wider">LIVE CAM FEEDS</div>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="live-cam-card"><span class="live-cam-badge">LIVE</span><img src="https://images.unsplash.com/photo-1477959856237-d9bfbf279f55?auto=format&fit=crop&w=200&q=60" alt="NY"><div class="absolute bottom-1 left-1.5 text-white font-bold text-[8px] drop-shadow">New York, USA</div></div>
+            <div class="live-cam-card"><span class="live-cam-badge">LIVE</span><img src="https://images.unsplash.com/photo-1570168007204-dfb528c695f4?auto=format&fit=crop&w=200&q=60" alt="Cairo"><div class="absolute bottom-1 left-1.5 text-white font-bold text-[8px] drop-shadow">Cairo, Egypt</div></div>
+            <div class="live-cam-card"><span class="live-cam-badge">LIVE</span><img src="https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?auto=format&fit=crop&w=200&q=60" alt="Mumbai"><div class="absolute bottom-1 left-1.5 text-white font-bold text-[8px] drop-shadow">Mumbai, India</div></div>
+            <div class="live-cam-card"><span class="live-cam-badge">LIVE</span><img src="https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?auto=format&fit=crop&w=200&q=60" alt="Sydney"><div class="absolute bottom-1 left-1.5 text-white font-bold text-[8px] drop-shadow">Sydney, Australia</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW 5: AI VISION ═══ -->
+    <div id="tab-view-ai-vision" class="screenshot-view-tab p-6 md:p-10 max-w-7xl mx-auto w-full space-y-6">
+      <div class="matrix-section-frame mb-6">
+        <div class="flex items-center gap-3 pb-4">
+          <span class="w-8 h-8 rounded border border-cyan-400/60 flex items-center justify-center font-mono font-bold text-xs text-cyan-400">05</span>
+          <div>
+            <h2 class="font-editorial text-3xl font-bold text-white tracking-wider">AI COMPUTER VISION DAMAGE ASSESSMENT</h2>
+            <p class="font-mono text-[10px] text-cyan-400 tracking-wider uppercase mt-1">NEURAL DIAGNOSTIC SCANNER // REAL-TIME STRUCTURAL ANALYSIS</p>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-7 glass-panel-card p-5 hud-panel">
+          <span class="hud-br-bl"></span><span class="hud-br-br"></span>
+          <div class="scanner-stage">
+            <img id="scanner-display-img" class="scanner-image" src="https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?auto=format&fit=crop&w=1200&q=80" alt="Disaster Scanner">
+            <div id="scanner-laser-beam" class="laser-beam"></div>
+            <div id="neural-target-box" class="neural-target-box" style="top:35%;left:40%;width:35%;height:30%"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mt-4 font-mono text-[10px]">
+            <button class="disaster-sample-btn p-2 rounded border border-cyan-400 bg-cyan-950/60 text-cyan-300" data-sample="sample-1">1. Structural Fracture</button>
+            <button class="disaster-sample-btn p-2 rounded border border-slate-800 bg-slate-900 text-slate-400" data-sample="sample-2">2. Inundation Breach</button>
+            <button class="disaster-sample-btn p-2 rounded border border-slate-800 bg-slate-900 text-slate-400" data-sample="sample-3">3. Canopy Burn</button>
+          </div>
+        </div>
+        <div class="lg:col-span-5 glass-panel-card p-5 space-y-4 font-mono text-xs hud-panel">
+          <span class="hud-br-bl"></span><span class="hud-br-br"></span>
+          <div id="ai-scan-status-text" class="text-cyan-400 text-[10px] tracking-wider">NEURAL DIAGNOSTIC READY</div>
+          <div id="ai-integrity-score" class="text-rose-500 font-bold text-xl">STRUCTURAL INTEGRITY: 12.4% (CRITICAL)</div>
+          <div><span class="text-slate-500">PRIMARY HAZARD:</span><div id="ai-primary-hazard" class="text-slate-200 mt-1">Foundation Shear Fracture</div></div>
+          <div><span class="text-slate-500">RECOMMENDED ACTION:</span><div id="ai-recommended-action" class="text-cyan-400 mt-1">Immediate drone-assisted shoring and civilian vectoring.</div></div>
+          <div><span class="text-slate-500">CONFIDENCE:</span><div id="ai-confidence-score" class="text-emerald-400 font-bold mt-1">98.7%</div></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ═══ SOS TACTICAL COMMAND OVERLAY (Screenshot 2) ═══ -->
+  <div id="sos-modal-backdrop" class="modal-backdrop fixed inset-0 bg-black/95 backdrop-blur-xl z-50">
+    <div class="tactical-command-shell">
+
+      <!-- Top Bar -->
+      <div class="tactical-topbar">
+        <div class="flex items-center gap-3">
+          <span class="font-editorial text-lg font-bold tracking-wider text-white">AETHER-X</span>
+          <span class="font-mono text-[10px] text-slate-500">Tactical Command System v9.7.3</span>
+        </div>
+        <div class="flex items-center gap-4 font-mono text-[10px]">
+          <span class="text-emerald-400 flex items-center gap-1">🛡 SECURE NETWORK AES-256</span>
+          <span class="text-emerald-400">🛰 SATELLITES 12/12 ONLINE</span>
+          <button id="close-sos-modal" class="text-slate-400 hover:text-white ml-4">✕ ESC</button>
+        </div>
+      </div>
+
+      <!-- Left Sidebar -->
+      <aside class="tactical-sidebar-left">
+        <div class="tactical-nav-item"><span>📊</span> Overview</div>
+        <div class="tactical-nav-item"><span>🧠</span> Intelligence</div>
+        <div class="tactical-nav-item"><span>⚡</span> Operations</div>
+        <div class="tactical-nav-item"><span>🕸</span> Sentinel Grid</div>
+        <div class="tactical-nav-item active-sos"><span>🆘</span> SOS Command</div>
+        <div class="tactical-nav-item"><span>👥</span> Team Status</div>
+        <div class="tactical-nav-item"><span>⚙</span> Systems</div>
+        <div class="tactical-nav-item"><span>📋</span> Logs</div>
+        <div class="mt-auto pt-4 border-t border-slate-800">
+          <div class="font-mono text-[9px] text-slate-500 mb-1">SYSTEM STATUS</div>
+          <div class="text-emerald-400 font-bold text-[10px]">OPERATIONAL</div>
+          <div class="text-slate-600 text-[9px]">All systems nominal</div>
+          <div class="text-slate-500 text-[9px] mt-1">Uptime: 98.7%</div>
+        </div>
+      </aside>
+
+      <!-- Center: SOS Modal -->
+      <div class="tactical-center-stage">
+        <div class="sos-modal-red-frame p-6 md:p-8 space-y-5">
+          <div class="flex items-center justify-between border-b border-rose-500/30 pb-4">
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+              <div>
+                <h3 class="font-mono text-sm font-bold text-rose-400 tracking-wider">URGENT SOS COMMAND</h3>
+                <p class="font-mono text-[9px] text-rose-300/70">Priority Emergency Dispatch Protocol</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-5 font-mono text-xs">
+            <!-- Col 1: Geolocation -->
+            <div class="space-y-3">
+              <div class="text-rose-400 font-bold text-[10px]">1. CURRENT GEOLOCATION</div>
+              <div class="text-[9px] text-emerald-400" id="gps-radar-status">Live GPS Tracking Active</div>
+              <div class="p-3 rounded bg-black/60 border border-slate-800 space-y-1">
+                <div id="gps-coords-display" class="font-bold text-cyan-400 text-[11px]">12°58'37.1"N 77°35'21.5"E</div>
+                <div class="text-[10px] text-slate-400">Bangalore, Karnataka, India</div>
+                <div class="text-[9px] text-emerald-400">Accuracy: 4.2m ●</div>
+              </div>
+              <div class="sos-radar-container flex items-center justify-center">
+                <div class="sos-radar-sweep"></div>
+                <div class="w-3 h-3 rounded-full bg-rose-500 shadow-[0_0_12px_#FF3B30] z-10"></div>
+              </div>
+              <div class="grid grid-cols-3 gap-1 text-[9px] text-center">
+                <div class="p-2 rounded bg-black/60 text-slate-500">ALTITUDE<br><span class="text-white font-bold">879 m</span></div>
+                <div class="p-2 rounded bg-black/60 text-slate-500">SPEED<br><span class="text-white font-bold">0.0 m/s</span></div>
+                <div class="p-2 rounded bg-black/60 text-slate-500">HEADING<br><span class="text-white font-bold">N/A</span></div>
+              </div>
+            </div>
+
+            <!-- Col 2: Incident Visual -->
+            <div class="space-y-3">
+              <div class="text-rose-400 font-bold text-[10px]">2. INCIDENT VISUAL (OPTIONAL)</div>
+              <div class="text-[9px] text-slate-500">Upload Evidence / Scene Photo</div>
+              <div id="evidence-dropzone" class="border-2 border-dashed border-rose-500/40 rounded-lg p-4 text-center cursor-pointer hover:bg-rose-950/20 transition-all">
+                <div class="text-rose-400 text-xl mb-1">☁</div>
+                <div class="font-bold text-slate-200 text-[10px]">DRAG & DROP IMAGE HERE</div>
+                <div class="text-[9px] text-slate-600 mt-1">JPG, PNG, HEIC (Max 10MB)</div>
+              </div>
+              <div id="evidence-preview"></div>
+              <div class="space-y-1">
+                <div class="flex justify-between text-[9px]"><span class="text-slate-500">AI PREVIEW & ANALYSIS</span><span class="text-emerald-400 font-bold">Edge Detection: ACTIVE</span></div>
+                <div class="w-full h-24 rounded border border-rose-500/30 overflow-hidden relative">
+                  <img src="https://images.unsplash.com/photo-1449824913935-59a10b8d2000?auto=format&fit=crop&w=400&q=60" alt="AI Scan" class="w-full h-full object-cover" style="filter:contrast(1.4) brightness(0.7)">
+                  <div class="absolute inset-0 border border-emerald-400/40 pointer-events-none"></div>
+                </div>
+                <div class="w-full h-1.5 bg-slate-900 rounded overflow-hidden"><div class="h-full bg-emerald-400" style="width:87%"></div></div>
+              </div>
+            </div>
+
+            <!-- Col 3: Severity -->
+            <div class="space-y-3">
+              <div class="text-rose-400 font-bold text-[10px]">3. SEVERITY LEVEL</div>
+              <div class="text-[9px] text-slate-500">Select Threat Severity</div>
+              <div class="space-y-2 text-[10px]">
+                <div class="severity-level-card" data-level="1"><span class="font-bold text-slate-300">LEVEL 1 — LOW</span><div class="text-slate-600 text-[9px]">Situation under control</div></div>
+                <div class="severity-level-card" data-level="2"><span class="font-bold text-amber-400">LEVEL 2 — MODERATE</span><div class="text-slate-600 text-[9px]">Potential threat detected</div></div>
+                <div class="severity-level-card selected level-3" data-level="3"><div class="flex justify-between items-center"><div><span class="font-bold text-rose-400">LEVEL 3 — HIGH</span><div class="text-rose-200/70 text-[9px]">Immediate danger</div></div><span class="text-rose-400 font-bold">✓</span></div></div>
+                <div class="severity-level-card" data-level="4"><span class="font-bold text-slate-300">LEVEL 4 — CRITICAL</span><div class="text-slate-600 text-[9px]">Life-threatening emergency</div></div>
+              </div>
+              <div class="p-2 rounded bg-rose-950/40 border border-rose-500/25 text-[9px] text-rose-300">High severity incident. Immediate response required.</div>
+            </div>
+          </div>
+
+          <div class="border-t border-rose-500/25 pt-4 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3 text-rose-400 font-mono text-[10px]">
+              <span class="text-base">⚠</span>
+              <div><div class="font-bold">WARNING</div><div class="text-slate-500 text-[9px]">This will immediately alert all available units. Ensure this is a genuine emergency.</div></div>
+            </div>
+            <button id="sos-dispatch-execute-btn" class="btn-execute-sos">((•)) EXECUTE SOS DISPATCH >></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Sidebar -->
+      <aside class="tactical-sidebar-right">
+        <div class="font-mono text-[10px] text-slate-500 font-bold tracking-wider mb-3">GLOBAL THREAT LEVEL</div>
+        <div class="text-center mb-4">
+          <div class="text-rose-500 font-bold text-2xl font-editorial mb-2">HIGH</div>
+          <div class="threat-sonar"><div class="w-full h-full rounded-full bg-rose-950/50 border border-rose-500/30 flex items-center justify-center text-2xl">🌍</div></div>
+        </div>
+        <div class="font-mono text-[10px] text-slate-500 font-bold tracking-wider mb-3 mt-6">LIVE THREATS</div>
+        <div class="space-y-2 font-mono text-[10px]">
+          <div class="flex justify-between items-center"><span class="text-slate-300">Urban Unrest</span><span class="severity-badge high">HIGH</span></div>
+          <div class="flex justify-between items-center"><span class="text-slate-300">Cyber Attack</span><span class="severity-badge medium">MEDIUM</span></div>
+          <div class="flex justify-between items-center"><span class="text-slate-300">Seismic Event</span><span class="severity-badge critical">CRITICAL</span></div>
+          <div class="flex justify-between items-center"><span class="text-slate-300">Biohazard Alert</span><span class="severity-badge high">HIGH</span></div>
+        </div>
+      </aside>
+
+      <!-- Bottom Bar -->
+      <div class="tactical-bottom-bar">
+        <div>
+          <div class="font-mono text-[10px] text-slate-500 font-bold mb-2">ACTIVE OPERATIONS</div>
+          <div class="grid grid-cols-3 gap-2">
+            <div class="operation-card"><div class="font-mono text-[9px] text-white font-bold">Nightfall</div><div class="text-slate-600 text-[8px]">Evacuation Protocol</div><div class="op-progress"><div class="op-progress-fill" style="width:78%"></div></div></div>
+            <div class="operation-card"><div class="font-mono text-[9px] text-white font-bold">Shieldwall</div><div class="text-slate-600 text-[8px]">Perimeter Defense</div><div class="op-progress"><div class="op-progress-fill" style="width:62%"></div></div></div>
+            <div class="operation-card"><div class="font-mono text-[9px] text-white font-bold">Eagle Eye</div><div class="text-slate-600 text-[8px]">Aerial Surveillance</div><div class="op-progress"><div class="op-progress-fill" style="width:91%"></div></div></div>
+          </div>
+        </div>
+        <div class="font-mono text-[10px] text-slate-500 hidden md:block">
+          <div class="font-bold mb-1">COMMANDER ID: AX-77-1828</div>
+          <div class="text-slate-600">All available units will be notified immediately upon dispatch.</div>
+        </div>
+        <div class="text-center font-mono">
+          <div class="text-[10px] text-slate-500 mb-1">UNITS DEPLOYED</div>
+          <div class="text-2xl font-bold text-white">24<span class="text-slate-500 text-sm"> / 48</span></div>
+          <div class="text-[9px] text-emerald-400">Available Units</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="js/globe3d.js"></script>
+  <script src="js/bento-effects.js"></script>
+  <script src="js/mission-map.js"></script>
+  <script src="js/sos-modal.js"></script>
+  <script src="js/evacuation.js"></script>
+  <script src="js/admin-dashboard.js"></script>
+  <script src="js/damage-scanner.js"></script>
+  <script src="js/bg-canvas.js"></script>
+  <script src="js/command-center.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
