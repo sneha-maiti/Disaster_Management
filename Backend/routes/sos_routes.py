@@ -116,7 +116,8 @@ def create_sos(payload: SOSInput):
     # -----------------------------
 
     notification = send_sos_notification(
-        sos_record
+        sos_record["id"],
+        sos_record["priority_code"]
     )
 
     # -----------------------------
