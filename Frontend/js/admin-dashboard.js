@@ -6,7 +6,7 @@
 
 (function () {
   let severityChart, throughputChart;
-  
+
   let terminalLogs = [
     "[SYSTEM_INIT] Satellite Uplink Relay Established: GEO-SATSAT-09",
     "[AI_NEXUS] Damage Diagnostic Neural Model v4.8 Loaded (Accuracy: 99.4%)",
