@@ -54,7 +54,7 @@ def analyze_disaster_with_gemini(description: str, location: Optional[str] = Non
         )
 
     loc_str = location if location else "Unspecified Location"
-    model_identifier = "gemini-3.5-flash"
+    model_identifier = "gemini-1.5-flash"
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model_identifier}:generateContent?key={GEMINI_API_KEY}"
     
     prompt = (

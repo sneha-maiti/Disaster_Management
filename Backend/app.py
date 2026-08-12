@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
 from utils.config import APP_NAME, APP_VERSION, CORS_ORIGINS, HOST, PORT, DEBUG
+from database.db import init_db
 
 # -----------------------------------------
 # IMPORT ALL ROUTERS (SYSTEM, AI, MAPS & TEAMMATE ROUTES)
@@ -31,11 +32,17 @@ app = FastAPI(
     redoc_url="/redoc"    # ReDoc Documentation
 )
 
+@app.on_event("startup")
+def startup_event():
+    init_db()
+
 # Configure CORS Middleware (Supports environment-configured origin list or local dev wildcard)
+cors_allow_credentials = True if "*" not in CORS_ORIGINS else False
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
-    allow_credentials=True,
+    allow_credentials=cors_allow_credentials,
     allow_methods=["*"],
     allow_headers=["*"],
 )

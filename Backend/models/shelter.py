@@ -8,7 +8,7 @@ def create_shelter(name,location,latitude,longitude,capacity,available_space,res
     conn=get_db_connection()
     cursor=conn.cursor()
     cursor.execute(
-        """INSERT INTO shelter(name,location,latitude,longitude,capacity,available_space,resources)
+        """INSERT INTO shelters(name,location,latitude,longitude,capacity,available_space,resources)
          VALUES (?,?,?,?,?,?,?)""",
         (name,location,latitude,longitude,capacity,available_space,resources))
     conn.commit()
@@ -27,7 +27,7 @@ def get_all_shelters():
 def get_shelter_by_id(shelter_id):
     conn=get_db_connection()
     cursor=conn.cursor()
-    cursor.execute("SELECT* FROM shelters id=?",(shelter_id,))
+    cursor.execute("SELECT* FROM shelters WHERE id=?",(shelter_id,))
     shelter=cursor.fetchone()
     conn.close()
     return shelter
