@@ -4,40 +4,31 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AETHER-X // Autonomous Planetary Resilience Network</title>
+  <title>AETHERX // Disaster Management Platform</title>
 
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@600;700&display=swap"
-    rel="stylesheet">
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
 
   <!-- Separate Stylesheet -->
   <link rel="stylesheet" href="css/login.css">
-
-  <!-- Separate JavaScript -->
+  
+  <!-- Separate JavaScript Engine -->
   <script src="js/login.js" defer></script>
 </head>
 
 <body>
 
   <!-- ==========================================================================
-       COMMAND CENTER 3D ROOM & WORLD MAP BACKGROUND
+       COMMAND CENTER ROOM & WORLD MAP BACKGROUND
        ========================================================================== -->
   <div class="command-room-bg">
-    <!-- Animated Interactive World Map Canvas -->
+    <!-- Interactive World Map Canvas -->
     <canvas id="world-map-canvas"></canvas>
-
-    <!-- Side Control Room Vignettes -->
-    <div class="room-arch-left"></div>
-    <div class="room-arch-right"></div>
-
-    <!-- 3D Hexagonal Grid Floor -->
-    <div class="hex-grid-floor"></div>
 
     <!-- Holographic Pedestal projection ring at center bottom -->
     <div class="holo-pedestal-wrap">
@@ -58,7 +49,7 @@
          LEFT COLUMN: TELEMETRY WIDGETS
          ========================================================================== -->
     <aside class="left-column-telemetry">
-
+      
       <!-- Card 1: Active Rescue Ops -->
       <div class="tech-widget-card">
         <div class="widget-header">
@@ -111,30 +102,25 @@
 
 
     <!-- ==========================================================================
-         CENTER COLUMN: SECURE ACCESS PORTAL (CHAMFERED GLOW CARD)
+         CENTER COLUMN: SECURE ACCESS PORTAL (AETHERX CHAMFERED GLOW CARD)
          ========================================================================== -->
     <section class="center-column-portal">
       <div class="secure-portal-card" id="secure-portal-card">
-
+        
         <!-- Outer Corner Brackets -->
         <div class="portal-corner-bracket c-tl"></div>
         <div class="portal-corner-bracket c-tr"></div>
         <div class="portal-corner-bracket c-bl"></div>
         <div class="portal-corner-bracket c-br"></div>
 
-        <!-- Branding Header -->
+        <!-- Branding Header: AETHERX -->
         <header class="portal-header">
           <!-- Shield SVG Logo -->
           <svg class="brand-shield-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- Outer Shield Frame -->
-            <path d="M50 5 L90 20 V50 C90 72 50 95 50 95 C50 95 10 72 10 50 V20 L50 5 Z" fill="rgba(8, 14, 26, 0.9)"
-              stroke="#00f0ff" stroke-width="4" />
-            <!-- Inner Red Shield Fill -->
-            <path d="M50 14 L80 26 V48 C80 65 50 83 50 83 C50 83 20 65 20 48 V26 L50 14 Z" fill="rgba(255, 42, 75, 0.2)"
-              stroke="#ff2a4b" stroke-width="3" />
-            <!-- Center Red Inverted Triangle Ring -->
-            <polygon points="50,30 70,62 30,62" fill="none" stroke="#ff2a4b" stroke-width="4" />
-            <circle cx="50" cy="50" r="8" fill="#ff2a4b" />
+            <path d="M50 5 L90 20 V50 C90 72 50 95 50 95 C50 95 10 72 10 50 V20 L50 5 Z" fill="rgba(8, 14, 26, 0.9)" stroke="#00f0ff" stroke-width="4"/>
+            <path d="M50 14 L80 26 V48 C80 65 50 83 50 83 C50 83 20 65 20 48 V26 L50 14 Z" fill="rgba(255, 42, 75, 0.2)" stroke="#ff2a4b" stroke-width="3"/>
+            <polygon points="50,30 70,62 30,62" fill="none" stroke="#ff2a4b" stroke-width="4"/>
+            <circle cx="50" cy="50" r="8" fill="#ff2a4b"/>
           </svg>
 
           <h1 class="brand-main-title">AETHER<span>X</span></h1>
@@ -146,14 +132,13 @@
 
         <!-- Authentication Form -->
         <form id="portal-login-form" onsubmit="handleLoginSubmit(event)" autocomplete="off">
-
+          
           <!-- Input 1: Emergency ID -->
           <div class="portal-input-group">
             <label for="emergency-id-input" class="input-label-text">EMERGENCY ID</label>
             <div class="input-field-box">
               <i data-lucide="user" class="input-icon-left"></i>
-              <input type="text" id="emergency-id-input" class="input-element" placeholder="DM-7842-ALPHA"
-                value="DM-7842-ALPHA" required />
+              <input type="text" id="emergency-id-input" class="input-element" placeholder="DM-7842-ALPHA" value="DM-7842-ALPHA" required />
               <i data-lucide="id-card" class="input-icon-right"></i>
             </div>
           </div>
@@ -163,10 +148,8 @@
             <label for="access-pin-input" class="input-label-text">ACCESS PIN</label>
             <div class="input-field-box">
               <i data-lucide="lock" class="input-icon-left"></i>
-              <input type="password" id="access-pin-input" class="input-element" placeholder="••••••••"
-                value="TacticalPIN2026" required />
-              <button type="button" style="background:none; border:none; cursor:pointer;"
-                onclick="togglePasswordVisibility()">
+              <input type="password" id="access-pin-input" class="input-element" placeholder="••••••••" value="TacticalPIN2026" required />
+              <button type="button" style="background:none; border:none; cursor:pointer;" onclick="togglePasswordVisibility()">
                 <i data-lucide="eye" class="input-icon-right" id="toggle-eye-icon"></i>
               </button>
             </div>
@@ -180,19 +163,39 @@
 
         </form>
 
-        <!-- Divider -->
-        <div class="tech-divider" style="margin-top: 0.2rem;">BIOMETRIC VERIFICATION</div>
+        <!-- OAuth Divider -->
+        <div class="tech-divider" style="margin-top: 0.4rem;">OR CONTINUE WITH</div>
 
-        <!-- Biometric Fingerprint Box -->
-        <div class="biometric-scanner-box" id="bio-scanner-box" onclick="triggerBiometricScan()">
-          <div class="laser-scan-bar"></div>
-          <div class="fingerprint-icon-wrap">
-            <i data-lucide="fingerprint"></i>
-          </div>
-          <div class="biometric-text-info">
-            <span class="biometric-title" id="bio-scan-title">PLACE FINGER ON SCAN</span>
-            <span class="biometric-sub" id="bio-scan-sub">OR TAP TO INITIATE</span>
-          </div>
+        <!-- OAuth Provider Login Buttons (Google, Microsoft, GitHub) -->
+        <div class="oauth-providers-container">
+          
+          <!-- Google Login Button -->
+          <button type="button" class="oauth-btn oauth-google" title="Sign in with Google" onclick="handleOAuthLogin('Google')">
+            <svg viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.28-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+            </svg>
+          </button>
+
+          <!-- Microsoft Login Button -->
+          <button type="button" class="oauth-btn oauth-microsoft" title="Sign in with Microsoft" onclick="handleOAuthLogin('Microsoft')">
+            <svg viewBox="0 0 23 23" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#f35325" d="M1 1h10v10H1z"/>
+              <path fill="#81bc06" d="M12 1h10v10H12z"/>
+              <path fill="#05a6f0" d="M1 12h10v10H1z"/>
+              <path fill="#ffba08" d="M12 12h10v10H12z"/>
+            </svg>
+          </button>
+
+          <!-- GitHub Login Button -->
+          <button type="button" class="oauth-btn oauth-github" title="Sign in with GitHub" onclick="handleOAuthLogin('GitHub')">
+            <svg viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg">
+              <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"/>
+            </svg>
+          </button>
+
         </div>
 
       </div>
@@ -203,7 +206,7 @@
          RIGHT COLUMN: GLOBAL OVERVIEW & LIVE FEEDS
          ========================================================================== -->
     <aside class="right-column-overview">
-
+      
       <!-- Card 1: Global Disaster Overview -->
       <div class="tech-widget-card">
         <div class="widget-header">
@@ -323,7 +326,7 @@
           </div>
         </div>
         <div class="utc-clock-display" id="utc-clock-value">
-          UTC 2026-08-12 07:23:45
+          UTC 2026-08-12 17:45:00
         </div>
       </div>
 
