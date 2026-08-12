@@ -14,7 +14,9 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.map-switch-row:last-child { border-bottom: none; }
+.map-switch-row:last-child {
+  border-bottom: none;
+}
 
 .toggle-switch-input {
   appearance: none;
@@ -69,7 +71,9 @@
   z-index: 1;
 }
 
-.timeline-node-item:first-child::before { display: none; }
+.timeline-node-item:first-child::before {
+  display: none;
+}
 
 .timeline-dot {
   width: 12px;
@@ -117,8 +121,13 @@
 }
 
 @keyframes radarRotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Severity level cards */
@@ -191,8 +200,16 @@
 }
 
 @keyframes wavePulse {
-  0% { height: 3px; opacity: 0.3; }
-  100% { height: 16px; opacity: 1; box-shadow: 0 0 6px var(--color-cyan); }
+  0% {
+    height: 3px;
+    opacity: 0.3;
+  }
+
+  100% {
+    height: 16px;
+    opacity: 1;
+    box-shadow: 0 0 6px var(--color-cyan);
+  }
 }
 
 /* Alert list items */
@@ -206,7 +223,9 @@
   font-size: 0.65rem;
 }
 
-.alert-list-item:last-child { border-bottom: none; }
+.alert-list-item:last-child {
+  border-bottom: none;
+}
 
 .severity-badge {
   padding: 2px 8px;
@@ -327,8 +346,15 @@
 }
 
 @keyframes sonarExpand {
-  0% { transform: scale(0.5); opacity: 1; }
-  100% { transform: scale(1.4); opacity: 0; }
+  0% {
+    transform: scale(0.5);
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
 }
 
 /* AI Director orb */
@@ -342,8 +368,15 @@
 }
 
 @keyframes orbPulse {
-  0%, 100% { box-shadow: 0 0 25px var(--color-cyan-glow); }
-  50% { box-shadow: 0 0 40px rgba(0, 240, 255, 0.6); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 25px var(--color-cyan-glow);
+  }
+
+  50% {
+    box-shadow: 0 0 40px rgba(0, 240, 255, 0.6);
+  }
 }
 
 /* Execute SOS button */
@@ -418,7 +451,9 @@
   border-right: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.impact-stat-item:last-child { border-right: none; }
+.impact-stat-item:last-child {
+  border-right: none;
+}
 
 .impact-stat-value {
   font-size: 0.9rem;

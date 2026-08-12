@@ -5,110 +5,204 @@
    ========================================================================== */
 
 (function () {
-  const sampleDisasters = {
+  'use strict';
+
+  const samples = {
     'sample-1': {
-      title: 'Earthquake Fault Shear Fracture',
+      title: 'EARTHQUAKE FAULT / STRUCTURAL SHEAR',
       image: 'https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?auto=format&fit=crop&w=1200&q=80',
       integrity: '34.2% (COMPROMISED)',
       hazard: 'Foundation Shear Fracture & Load Column Shear',
       action: 'Immediate structural evacuation & drone-assisted shoring.',
       confidence: '99.4%',
-      targetBox: { top: '35%', left: '40%', width: '35%', height: '30%' }
+      targetBox: { top: '35%', left: '40%', width: '35%', height: '30%' },
+      accent: 'critical'
     },
     'sample-2': {
-      title: 'Coastal Flash Flood Inundation',
+      title: 'COASTAL FLASH FLOOD / INUNDATION BREACH',
       image: 'https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?auto=format&fit=crop&w=1200&q=80',
       integrity: '58.7% (MODERATE RISK)',
       hazard: 'Sub-surface Erosion & Electrical Grid Submersion',
       action: 'Deploy amphibious rescue pods & isolate power substations.',
       confidence: '97.8%',
-      targetBox: { top: '50%', left: '20%', width: '50%', height: '40%' }
+      targetBox: { top: '50%', left: '20%', width: '50%', height: '40%' },
+      accent: 'warning'
     },
     'sample-3': {
-      title: 'Wildfire Thermal Canopy Perimeter',
+      title: 'WILDFIRE THERMAL / CANOPY PERIMETER',
       image: 'https://images.unsplash.com/photo-1574063413132-355dbfd83e0c?auto=format&fit=crop&w=1200&q=80',
       integrity: '18.4% (CRITICAL THREAT)',
       hazard: 'Radiant Heat Ignition & Oxygen Depletion',
       action: 'Trigger atmospheric fire-retardant drone drop.',
       confidence: '99.1%',
-      targetBox: { top: '20%', left: '30%', width: '45%', height: '50%' }
+      targetBox: { top: '20%', left: '30%', width: '45%', height: '50%' },
+      accent: 'critical'
     }
   };
 
-  function initDamageScanner() {
-    const sampleBtns = document.querySelectorAll('.disaster-sample-btn');
-    const scanTrigger = document.getElementById('trigger-laser-scan-btn');
-    const imageEl = document.getElementById('scanner-display-img');
-    const laserEl = document.getElementById('scanner-laser-beam');
-    const targetBox = document.getElementById('neural-target-box');
+  const fallbackImage = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720">
+      <defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#061527"/><stop offset=".5" stop-color="#123b52"/><stop offset="1" stop-color="#080d1b"/></linearGradient><pattern id="p" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" fill="none" stroke="#6ee7ff" stroke-opacity=".14"/></pattern></defs>
+      <rect width="1200" height="720" fill="url(#g)"/><rect width="1200" height="720" fill="url(#p)"/><circle cx="860" cy="240" r="150" fill="none" stroke="#6ee7ff" stroke-opacity=".18" stroke-width="3"/><path d="M150 570L380 340l130 90 180-220 330 360" fill="none" stroke="#63f5ca" stroke-opacity=".5" stroke-width="8"/><text x="60" y="90" fill="#b9f5ff" font-family="monospace" font-size="24" letter-spacing="5">OPTICAL FEED DEGRADED / LOCAL FALLBACK</text>
+    </svg>`);
 
-    sampleBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        sampleBtns.forEach(b => b.classList.remove('border-cyan-400', 'bg-cyan-950/60'));
-        btn.classList.add('border-cyan-400', 'bg-cyan-950/60');
-        const key = btn.dataset.sample;
-        loadSampleData(key);
-      });
+  let scanTimer = null;
+  let scanSequence = 0;
+  let currentKey = 'sample-1';
+
+  const $ = (id) => document.getElementById(id);
+  const panel = () => $('tab-view-ai-vision');
+
+  function setText(id, value) {
+    const element = $(id);
+    if (element) element.textContent = value;
+  }
+
+  function setTarget(box) {
+    const target = $('neural-target-box');
+    if (!target) return;
+    Object.assign(target.style, box);
+  }
+
+  function setActiveButton(key) {
+    document.querySelectorAll('.disaster-sample-btn').forEach((button) => {
+      const active = button.dataset.sample === key;
+      button.classList.toggle('border-cyan-400', active);
+      button.classList.toggle('bg-cyan-950/60', active);
+      button.classList.toggle('border-slate-800', !active);
+      button.classList.toggle('bg-slate-900', !active);
+      button.classList.toggle('text-cyan-300', active);
+      button.classList.toggle('text-slate-400', !active);
+      button.setAttribute('aria-pressed', String(active));
     });
-
-    if (scanTrigger) {
-      scanTrigger.addEventListener('click', () => {
-        const activeSample = document.querySelector('.disaster-sample-btn.border-cyan-400');
-        const key = activeSample ? activeSample.dataset.sample : 'sample-1';
-        runLaserScanAnimation(key);
-      });
-    }
-
-    // Default Load Sample 1
-    loadSampleData('sample-1');
   }
 
-  function loadSampleData(key) {
-    const data = sampleDisasters[key] || sampleDisasters['sample-1'];
-    const imageEl = document.getElementById('scanner-display-img');
-    const targetBox = document.getElementById('neural-target-box');
-
-    if (imageEl) imageEl.src = data.image;
-
-    if (targetBox) {
-      targetBox.style.top = data.targetBox.top;
-      targetBox.style.left = data.targetBox.left;
-      targetBox.style.width = data.targetBox.width;
-      targetBox.style.height = data.targetBox.height;
-    }
-
-    runLaserScanAnimation(key);
+  function setStatus(text, state) {
+    const status = $('ai-scan-status-text');
+    if (!status) return;
+    status.textContent = text;
+    status.dataset.state = state || 'ready';
   }
 
-  function runLaserScanAnimation(key) {
-    const data = sampleDisasters[key] || sampleDisasters['sample-1'];
-    const laserEl = document.getElementById('scanner-laser-beam');
-    const statusText = document.getElementById('ai-scan-status-text');
-
-    if (laserEl) {
-      laserEl.classList.add('scanning');
-      if (statusText) statusText.textContent = 'AI COMPUTER VISION SCANNING IN PROGRESS...';
+  function updateReadout(data) {
+    const score = $('ai-integrity-score');
+    if (score) {
+      score.textContent = data.integrity;
+      score.dataset.severity = data.accent;
+      score.classList.remove('text-crimson', 'text-amber-400', 'text-rose-500');
+      score.classList.add(data.accent === 'critical' ? 'text-rose-500' : 'text-amber-400');
     }
+    setText('ai-primary-hazard', data.hazard);
+    setText('ai-recommended-action', data.action);
+    setText('ai-confidence-score', data.confidence);
+    setText('ai-scan-title', data.title);
+  }
 
-    setTimeout(() => {
-      if (laserEl) laserEl.classList.remove('scanning');
-      if (statusText) statusText.textContent = 'NEURAL DIAGNOSTIC COMPLETE // HIGH CONFIDENCE';
+  function safeImageLoad(image, source, sequence) {
+    if (!image) return;
+    image.classList.add('is-loading');
+    image.dataset.requestSequence = String(sequence);
+    image.onload = () => {
+      if (image.dataset.requestSequence !== String(sequence)) return;
+      image.classList.remove('is-loading', 'is-fallback');
+      image.classList.add('is-loaded');
+    };
+    image.onerror = () => {
+      if (image.dataset.requestSequence !== String(sequence)) return;
+      image.onerror = null;
+      image.src = fallbackImage;
+      image.classList.remove('is-loading');
+      image.classList.add('is-fallback', 'is-loaded');
+    };
+    image.src = source;
+    if (image.complete) {
+      if (image.naturalWidth > 0) image.onload();
+      else image.onerror();
+    }
+  }
 
-      // Update AI Diagnostics Readout
-      const scoreEl = document.getElementById('ai-integrity-score');
-      const hazardEl = document.getElementById('ai-primary-hazard');
-      const actionEl = document.getElementById('ai-recommended-action');
-      const confidenceEl = document.getElementById('ai-confidence-score');
+  function runScan(key) {
+    const data = samples[key] || samples['sample-1'];
+    currentKey = samples[key] ? key : 'sample-1';
+    const sequence = ++scanSequence;
+    const laser = $('scanner-laser-beam');
+    const stage = panel() && panel().querySelector('.scanner-stage');
+    const scanButton = $('trigger-laser-scan-btn');
 
-      if (scoreEl) {
-        scoreEl.textContent = data.integrity;
-        scoreEl.className = `font-mono font-bold text-lg ${data.integrity.includes('COMPROMISED') || data.integrity.includes('CRITICAL') ? 'text-crimson' : 'text-amber-400'}`;
+    if (scanTimer) window.clearTimeout(scanTimer);
+    if (laser) {
+      laser.classList.remove('scanning');
+      void laser.offsetWidth;
+      laser.classList.add('scanning');
+    }
+    if (stage) stage.classList.add('is-scanning');
+    if (scanButton) {
+      scanButton.disabled = true;
+      scanButton.setAttribute('aria-busy', 'true');
+    }
+    setStatus('AI COMPUTER VISION SCANNING IN PROGRESS...', 'scanning');
+
+    scanTimer = window.setTimeout(() => {
+      if (sequence !== scanSequence) return;
+      if (laser) laser.classList.remove('scanning');
+      if (stage) stage.classList.remove('is-scanning');
+      if (scanButton) {
+        scanButton.disabled = false;
+        scanButton.setAttribute('aria-busy', 'false');
       }
-      if (hazardEl) hazardEl.textContent = data.hazard;
-      if (actionEl) actionEl.textContent = data.action;
-      if (confidenceEl) confidenceEl.textContent = data.confidence;
+      setStatus('NEURAL DIAGNOSTIC COMPLETE // HIGH CONFIDENCE', 'complete');
+      updateReadout(data);
     }, 2500);
   }
 
-  window.addEventListener('DOMContentLoaded', initDamageScanner);
+  function loadSample(key, shouldScan) {
+    const data = samples[key] || samples['sample-1'];
+    const image = $('scanner-display-img');
+    currentKey = samples[key] ? key : 'sample-1';
+    setActiveButton(currentKey);
+    setTarget(data.targetBox);
+    safeImageLoad(image, data.image, ++scanSequence);
+    updateReadout(data);
+    if (shouldScan !== false) runScan(currentKey);
+  }
+
+  function injectScanControl() {
+    if ($('trigger-laser-scan-btn')) return;
+    const buttons = document.querySelector('.disaster-sample-btn')?.parentElement;
+    if (!buttons) return;
+    const button = document.createElement('button');
+    button.id = 'trigger-laser-scan-btn';
+    button.type = 'button';
+    button.className = 'premium-scan-trigger';
+    button.innerHTML = '<span class="premium-scan-trigger__dot"></span><span>RUN NEURAL SCAN</span><kbd>SPACE</kbd>';
+    buttons.insertAdjacentElement('afterend', button);
+    button.addEventListener('click', () => runScan(currentKey));
+  }
+
+  function init() {
+    if (!panel() || panel().dataset.scannerPremiumReady === 'true') return;
+    panel().dataset.scannerPremiumReady = 'true';
+    const image = $('scanner-display-img');
+    if (image) {
+      image.decoding = 'async';
+      image.loading = 'eager';
+      image.referrerPolicy = 'no-referrer-when-downgrade';
+      image.alt = 'AI computer vision disaster damage scan';
+    }
+    injectScanControl();
+    document.querySelectorAll('.disaster-sample-btn').forEach((button) => {
+      button.type = 'button';
+      button.addEventListener('click', () => loadSample(button.dataset.sample));
+    });
+    document.addEventListener('keydown', (event) => {
+      if (event.code !== 'Space' || event.target.matches('input, textarea, button')) return;
+      if (!panel() || panel().classList.contains('hidden')) return;
+      event.preventDefault();
+      runScan(currentKey);
+    });
+    loadSample('sample-1');
+  }
+
+  window.addEventListener('DOMContentLoaded', init);
+  window.AetherXDamageScanner = { loadSample, runScan, samples };
 })();

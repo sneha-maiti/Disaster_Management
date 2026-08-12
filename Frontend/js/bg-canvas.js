@@ -9,287 +9,191 @@
    ========================================================================== */
 
 (function () {
-  let canvas, ctx;
-  let particles = [];
-  const maxParticles = 320;
-  const connectionDistance = 120;
-  
-  // Mouse state with lerp properties
-  let mouse = { x: 0, y: 0, targetX: 0, targetY: 0, radius: 180 };
-  
-  // Seismic Horizon Grid parameters
-  let waveTime = 0;
-  let gridColor = 'rgba(0, 240, 255, 0.15)'; // Default Cyan
-  
-  // Telemetry emergency pings
-  let radarPings = [];
+  'use strict';
 
-  function initBgCanvas() {
-    const heroStage = document.getElementById('tab-view-overview');
-    canvas = document.getElementById('aether-bg-canvas');
+  let canvas, ctx, stage, frameId, resizeObserver;
+  let width = 0, height = 0, dpr = 1, time = 0;
+  let running = true, initialized = false;
+  let particles = [], pulses = [], streams = [];
+  let gridColor = 'rgba(60, 218, 255, 0.16)';
+  let accent = { r: 60, g: 218, b: 255 };
+  const maxPulses = 4;
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const prefersLowPower = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches || /Mobi|Android/i.test(navigator.userAgent);
+  const mouse = { x: 0, y: 0, tx: 0, ty: 0, radius: 220, active: false };
 
-    if (!canvas) {
-      canvas = document.createElement('canvas');
-      canvas.id = 'aether-bg-canvas';
-      canvas.style.position = 'absolute';
-      canvas.style.top = '0';
-      canvas.style.left = '0';
-      canvas.style.width = '100%';
-      canvas.style.height = '100%';
-      canvas.style.zIndex = '0';
-      canvas.style.pointerEvents = 'none';
-      canvas.style.opacity = '0.55';
-
-      if (heroStage) {
-        heroStage.style.position = 'relative';
-        heroStage.insertBefore(canvas, heroStage.firstChild);
-      } else {
-        document.body.appendChild(canvas);
-      }
-    }
-
-    ctx = canvas.getContext('2d');
-    resizeCanvas();
-
-    // Populate Neural Constellation particles
-    for (let i = 0; i < maxParticles; i++) {
-      particles.push(new NeuralParticle());
-    }
-
-    const initialContainer = heroStage || document.body;
-    mouse.x = initialContainer.clientWidth / 2;
-    mouse.y = initialContainer.clientHeight / 2;
-    mouse.targetX = mouse.x;
-    mouse.targetY = mouse.y;
-
-    window.addEventListener('resize', resizeCanvas);
-    window.addEventListener('mousemove', (e) => {
-      const rect = canvas.getBoundingClientRect();
-      mouse.targetX = e.clientX - rect.left;
-      mouse.targetY = e.clientY - rect.top;
-    });
-
-    // Listen to threat level slider to shift grid color
-    setupAlertStateListener();
-
-    animate();
+  function injectCanvasStyles() {
+    if (document.getElementById('aether-bg-canvas-premium-styles')) return;
+    const style = document.createElement('style');
+    style.id = 'aether-bg-canvas-premium-styles';
+    style.textContent = `
+      #aether-bg-canvas { display:block; pointer-events:none; opacity:.72 !important; mix-blend-mode:screen; filter:saturate(1.16) contrast(1.06); }
+      #tab-view-overview { isolation:isolate; }
+      #tab-view-overview::before { content:''; position:absolute; z-index:-1; inset:0; pointer-events:none; background:radial-gradient(circle at 50% 10%, rgba(28,145,218,.08), transparent 42%), linear-gradient(180deg, rgba(2,8,19,.1), rgba(1,5,12,.32)); }
+      @media (prefers-reduced-motion: reduce) { #aether-bg-canvas { opacity:.48 !important; } }
+    `;
+    document.head.appendChild(style);
   }
 
+  function rgba(alpha) { return `rgba(${accent.r},${accent.g},${accent.b},${alpha})`; }
   function resizeCanvas() {
-    const heroStage = document.getElementById('tab-view-overview');
-    if (heroStage) {
-      canvas.width = heroStage.clientWidth;
-      canvas.height = heroStage.clientHeight;
-    } else {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
+    if (!canvas) return;
+    const rect = (stage || document.body).getBoundingClientRect();
+    width = Math.max(1, rect.width || window.innerWidth);
+    height = Math.max(1, rect.height || window.innerHeight);
+    dpr = Math.min(window.devicePixelRatio || 1, prefersLowPower ? 1.25 : 2);
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    mouse.x = mouse.tx = width / 2;
+    mouse.y = mouse.ty = height / 2;
+    particles.forEach((particle) => particle.reseed(true));
   }
 
-  // Dynamic alert color updates
-  function setupAlertStateListener() {
-    const slider = document.getElementById('nav-threat-slider');
-    if (!slider) return;
-
-    function updateColor(val) {
-      if (val === '5') gridColor = 'rgba(0, 255, 157, 0.18)'; // Green
-      else if (val === '4') gridColor = 'rgba(0, 240, 255, 0.18)'; // Cyan
-      else if (val === '3') gridColor = 'rgba(255, 184, 0, 0.18)'; // Amber
-      else if (val === '2') gridColor = 'rgba(255, 120, 0, 0.18)'; // Orange
-      else if (val === '1') gridColor = 'rgba(255, 42, 95, 0.22)'; // Crimson
+  class Node {
+    constructor() { this.reseed(false); }
+    reseed(initial) {
+      this.x = initial ? Math.random() * width : Math.random() * width;
+      this.y = initial ? Math.random() * height : Math.random() * height;
+      this.vx = (Math.random() - .5) * (reducedMotion ? .12 : .32);
+      this.vy = (Math.random() - .5) * (reducedMotion ? .12 : .32);
+      this.size = Math.random() * 1.5 + .45;
+      this.phase = Math.random() * Math.PI * 2;
+      this.alpha = Math.random() * .45 + .2;
     }
-
-    slider.addEventListener('input', (e) => updateColor(e.target.value));
-    updateColor(slider.value);
-  }
-
-  // Neural Particle Node with Fluid Spring Physics
-  class NeuralParticle {
-    constructor() {
-      this.reset();
-      this.x = Math.random() * canvas.width;
-      this.y = Math.random() * canvas.height;
-    }
-
-    reset() {
-      this.x = Math.random() * canvas.width;
-      this.y = Math.random() * canvas.height;
-      this.size = Math.random() * 2 + 0.5;
-      this.speedX = (Math.random() - 0.5) * 0.35;
-      this.speedY = (Math.random() - 0.5) * 0.35;
-      this.baseAlpha = Math.random() * 0.45 + 0.15;
-      this.alpha = this.baseAlpha;
-    }
-
     update() {
-      this.x += this.speedX;
-      this.y += this.speedY;
-
-      // Wrap boundaries
-      if (this.x < 0) this.x = canvas.width;
-      if (this.x > canvas.width) this.x = 0;
-      if (this.y < 0) this.y = canvas.height;
-      if (this.y > canvas.height) this.y = 0;
-
-      // Proximity Spring Physics to Cursor
-      const dx = mouse.x - this.x;
-      const dy = mouse.y - this.y;
-      const dist = Math.hypot(dx, dy);
-      if (dist < mouse.radius) {
-        const force = (mouse.radius - dist) / mouse.radius;
-        this.x -= (dx / dist) * force * 1.8;
-        this.y -= (dy / dist) * force * 1.8;
+      this.x += this.vx; this.y += this.vy; this.phase += .018;
+      if (this.x < -20) this.x = width + 20; if (this.x > width + 20) this.x = -20;
+      if (this.y < -20) this.y = height + 20; if (this.y > height + 20) this.y = -20;
+      const dx = mouse.x - this.x, dy = mouse.y - this.y, distance = Math.hypot(dx, dy) || 1;
+      if (mouse.active && distance < mouse.radius) {
+        const force = (1 - distance / mouse.radius) * .9;
+        this.x -= dx / distance * force; this.y -= dy / distance * force;
       }
     }
-
     draw() {
-      ctx.beginPath();
-      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-      ctx.fillStyle = gridColor.replace(/[\d.]+\)$/, `${this.alpha})`);
-      ctx.fill();
+      const pulse = .72 + Math.sin(this.phase + time * .05) * .28;
+      ctx.beginPath(); ctx.arc(this.x, this.y, this.size * pulse, 0, Math.PI * 2);
+      ctx.fillStyle = rgba(this.alpha * pulse); ctx.fill();
+      if (this.size > 1.35) { ctx.shadowBlur = 12; ctx.shadowColor = rgba(.72); ctx.fill(); ctx.shadowBlur = 0; }
     }
   }
 
-  // Render Layer 1: Deep Void Matrix & Spotlight Aura
-  function drawVoidMatrix() {
-    const radialGrad = ctx.createRadialGradient(
-      canvas.width / 2, canvas.height / 2, 20,
-      canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height)
-    );
-    radialGrad.addColorStop(0, '#0a1128');
-    radialGrad.addColorStop(1, '#030508');
-    ctx.fillStyle = radialGrad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Mouse Spotlight Aura (Smooth Lerp)
-    mouse.x += (mouse.targetX - mouse.x) * 0.08;
-    mouse.y += (mouse.targetY - mouse.y) * 0.08;
-
-    const auraGrad = ctx.createRadialGradient(
-      mouse.x, mouse.y, 0,
-      mouse.x, mouse.y, mouse.radius
-    );
-    auraGrad.addColorStop(0, 'rgba(0, 240, 255, 0.15)');
-    auraGrad.addColorStop(1, 'rgba(0, 240, 255, 0.0)');
-    ctx.fillStyle = auraGrad;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  function drawBase() {
+    const bg = ctx.createRadialGradient(width * .5, height * .22, 0, width * .5, height * .5, Math.max(width, height) * .9);
+    bg.addColorStop(0, '#0b1b35'); bg.addColorStop(.38, '#061224'); bg.addColorStop(1, '#02050d');
+    ctx.fillStyle = bg; ctx.fillRect(0, 0, width, height);
+    const aura = ctx.createRadialGradient(mouse.x, mouse.y, 0, mouse.x, mouse.y, mouse.radius * 1.5);
+    aura.addColorStop(0, rgba(.16)); aura.addColorStop(.42, rgba(.055)); aura.addColorStop(1, rgba(0));
+    ctx.fillStyle = aura; ctx.fillRect(0, 0, width, height);
   }
 
-  // Render Layer 2: Perspective Seismic Horizon Grid
-  function drawPerspectiveHorizonGrid() {
-    ctx.save();
-    ctx.strokeStyle = gridColor;
-    ctx.lineWidth = 0.65;
-
-    const horizonY = canvas.height * 0.62;
-    const floorHeight = canvas.height - horizonY;
-    const gridLines = 26;
-    waveTime += 0.02;
-
-    const depthSteps = 15;
-
-    for (let i = 0; i < depthSteps; i++) {
-      const normY = Math.pow(i / depthSteps, 2); 
-      const y = horizonY + normY * floorHeight;
-
-      ctx.beginPath();
-      const waveShift = Math.sin(normY * 4.5 - waveTime * 2.0) * 12 * normY;
-      
-      ctx.moveTo(0, y + waveShift);
-      ctx.lineTo(canvas.width, y + waveShift);
-      ctx.stroke();
+  function drawTopographicGrid() {
+    ctx.save(); ctx.lineWidth = .55; ctx.strokeStyle = gridColor;
+    const horizon = height * .57, floor = height - horizon, depth = prefersLowPower ? 11 : 17;
+    for (let i = 0; i < depth; i++) {
+      const n = i / depth, y = horizon + Math.pow(n, 1.85) * floor;
+      const wave = reducedMotion ? 0 : Math.sin(time * .018 + n * 7) * n * 9;
+      ctx.beginPath(); ctx.moveTo(0, y + wave); ctx.lineTo(width, y + wave); ctx.stroke();
     }
-
-    const vanishingX = canvas.width / 2;
-    for (let i = -gridLines; i <= gridLines; i++) {
-      const startX = vanishingX + (i * (canvas.width / gridLines) * 0.2);
-      const endX = vanishingX + (i * (canvas.width / gridLines) * 1.5);
-
-      ctx.beginPath();
-      ctx.moveTo(startX, horizonY);
-      ctx.lineTo(endX, canvas.height);
-      ctx.stroke();
+    const center = width * .5 + (mouse.x - width / 2) * .045;
+    const lines = prefersLowPower ? 15 : 27;
+    for (let i = -lines; i <= lines; i++) {
+      ctx.beginPath(); ctx.moveTo(center + i * (width / lines) * .18, horizon); ctx.lineTo(center + i * (width / lines) * 1.7, height); ctx.stroke();
     }
-
     ctx.restore();
   }
 
-  // Render Layer 3: Connection web filaments & Telemetry Pings
-  function drawConstellationFilaments() {
+  function drawNetwork() {
+    const distanceLimit = prefersLowPower ? 105 : 135;
     for (let i = 0; i < particles.length; i++) {
+      const a = particles[i];
       for (let j = i + 1; j < particles.length; j++) {
-        const dx = particles[i].x - particles[j].x;
-        const dy = particles[i].y - particles[j].y;
-        const dist = Math.hypot(dx, dy);
-
-        if (dist < connectionDistance) {
-          const alpha = (1 - dist / connectionDistance) * 0.09;
-          ctx.beginPath();
-          ctx.moveTo(particles[i].x, particles[i].y);
-          ctx.lineTo(particles[j].x, particles[j].y);
-          ctx.strokeStyle = gridColor.replace(/[\d.]+\)$/, `${alpha})`);
-          ctx.lineWidth = 0.6;
-          ctx.stroke();
+        const b = particles[j], dx = a.x - b.x, dy = a.y - b.y, distance = Math.hypot(dx, dy);
+        if (distance < distanceLimit) {
+          const alpha = (1 - distance / distanceLimit) * .13;
+          ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+          ctx.strokeStyle = rgba(alpha); ctx.lineWidth = .55; ctx.stroke();
         }
       }
     }
   }
 
-  // Generate occasional emergency telemetry radar waves
-  function processRadarPings() {
-    if (Math.random() < 0.006 && radarPings.length < 3) {
-      radarPings.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        radius: 5,
-        maxRadius: 160,
-        alpha: 0.8
-      });
-    }
-
-    ctx.save();
-    radarPings.forEach((ping, idx) => {
-      ping.radius += 1.8;
-      ping.alpha = 1 - (ping.radius / ping.maxRadius);
-
-      ctx.beginPath();
-      ctx.arc(ping.x, ping.y, ping.radius, 0, Math.PI * 2);
-      ctx.strokeStyle = gridColor.replace(/[\d.]+\)$/, `${ping.alpha})`);
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      if (ping.radius >= ping.maxRadius) {
-        radarPings.splice(idx, 1);
-      }
+  function drawHudRings() {
+    const x = width * .82, y = height * .27, base = Math.min(width, height) * .09;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(time * .002);
+    [1, 1.4, 1.8].forEach((scale, index) => {
+      ctx.beginPath(); ctx.arc(0, 0, base * scale, 0, Math.PI * 2);
+      ctx.setLineDash(index === 1 ? [2, 8] : [26, 9]); ctx.lineWidth = index === 0 ? 1.2 : .6; ctx.strokeStyle = rgba(.2 - index * .04); ctx.stroke();
     });
     ctx.restore();
   }
 
-  // Render Layer 4: Tactical Scanline
-  function drawTacticalScanlines() {
-    ctx.save();
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
-    for (let y = 0; y < canvas.height; y += 4) {
-      ctx.fillRect(0, y, canvas.width, 1);
-    }
+  function maybeSpawnPulse() {
+    if (!reducedMotion && Math.random() < .006 && pulses.length < maxPulses) pulses.push({ x: Math.random() * width, y: height * (.12 + Math.random() * .65), radius: 3, life: 1 });
+  }
+  function drawPulses() {
+    pulses = pulses.filter((pulse) => {
+      pulse.radius += reducedMotion ? 0 : 1.8; pulse.life -= .012;
+      ctx.beginPath(); ctx.arc(pulse.x, pulse.y, pulse.radius, 0, Math.PI * 2); ctx.strokeStyle = rgba(Math.max(0, pulse.life * .45)); ctx.lineWidth = 1.25; ctx.stroke();
+      ctx.beginPath(); ctx.arc(pulse.x, pulse.y, 2.5, 0, Math.PI * 2); ctx.fillStyle = rgba(Math.max(0, pulse.life)); ctx.fill();
+      return pulse.life > 0;
+    });
+  }
+
+  function setupStreams() {
+    const count = prefersLowPower ? 9 : 17;
+    streams = Array.from({ length: count }, () => ({ x: Math.random() * width, y: Math.random() * height, speed: .25 + Math.random() * .75, length: 14 + Math.random() * 55, alpha: .08 + Math.random() * .16 }));
+  }
+  function drawStreams() {
+    if (reducedMotion) return;
+    ctx.save(); ctx.lineWidth = 1;
+    streams.forEach((stream) => { stream.y += stream.speed; if (stream.y > height + stream.length) { stream.y = -stream.length; stream.x = Math.random() * width; } ctx.beginPath(); ctx.moveTo(stream.x, stream.y - stream.length); ctx.lineTo(stream.x, stream.y); ctx.strokeStyle = rgba(stream.alpha); ctx.stroke(); });
     ctx.restore();
   }
 
-  // Frame animation runner
+  function drawScanline() {
+    ctx.save(); const y = ((time * (reducedMotion ? 0 : .42)) % (height + 100)) - 50; const gradient = ctx.createLinearGradient(0, y - 38, 0, y + 38); gradient.addColorStop(0, rgba(0)); gradient.addColorStop(.5, rgba(.07)); gradient.addColorStop(1, rgba(0)); ctx.fillStyle = gradient; ctx.fillRect(0, y - 38, width, 76); ctx.restore();
+  }
+
+  function drawNoiseOverlay() {
+    ctx.save(); ctx.globalAlpha = .026; for (let i = 0; i < (prefersLowPower ? 35 : 70); i++) { ctx.fillStyle = i % 2 ? '#ffffff' : '#49dfff'; ctx.fillRect(Math.random() * width, Math.random() * height, 1, 1); } ctx.restore();
+  }
+
   function animate() {
-    drawVoidMatrix();
-    drawPerspectiveHorizonGrid();
+    if (!running) { frameId = requestAnimationFrame(animate); return; }
+    time += 1; mouse.x += (mouse.tx - mouse.x) * .075; mouse.y += (mouse.ty - mouse.y) * .075;
+    drawBase(); drawTopographicGrid(); drawHudRings(); drawStreams();
+    particles.forEach((particle) => { particle.update(); particle.draw(); });
+    drawNetwork(); maybeSpawnPulse(); drawPulses(); drawScanline(); drawNoiseOverlay();
+    frameId = requestAnimationFrame(animate);
+  }
 
-    particles.forEach(p => {
-      p.update();
-      p.draw();
-    });
-    drawConstellationFilaments();
-    processRadarPings();
+  function updateThreatColor(value) {
+    const colors = { 5: ['rgba(69,245,190,.2)', { r: 69, g: 245, b: 190 }], 4: ['rgba(60,218,255,.18)', { r: 60, g: 218, b: 255 }], 3: ['rgba(255,190,70,.18)', { r: 255, g: 190, b: 70 }], 2: ['rgba(255,125,48,.2)', { r: 255, g: 125, b: 48 }], 1: ['rgba(255,56,92,.22)', { r: 255, g: 56, b: 92 }] };
+    const selected = colors[value] || colors[4]; gridColor = selected[0]; accent = selected[1];
+  }
 
-    drawTacticalScanlines();
+  function setupThreatListener() {
+    const slider = document.getElementById('nav-threat-slider'); if (!slider) return;
+    slider.addEventListener('input', (event) => updateThreatColor(event.target.value)); updateThreatColor(slider.value);
+  }
 
-    requestAnimationFrame(animate);
+  function initBgCanvas() {
+    if (initialized) return; initialized = true; injectCanvasStyles();
+    stage = document.getElementById('tab-view-overview'); canvas = document.getElementById('aether-bg-canvas');
+    if (!canvas) { canvas = document.createElement('canvas'); canvas.id = 'aether-bg-canvas'; (stage || document.body).insertBefore(canvas, (stage || document.body).firstChild); }
+    canvas.setAttribute('aria-hidden', 'true'); canvas.style.position = 'absolute'; canvas.style.inset = '0'; canvas.style.zIndex = '0'; canvas.style.pointerEvents = 'none';
+    if (stage) stage.style.position = 'relative';
+    ctx = canvas.getContext('2d', { alpha: true, desynchronized: true }); if (!ctx) return;
+    const count = prefersLowPower ? 150 : 280; particles = Array.from({ length: count }, () => new Node()); resizeCanvas(); setupStreams(); setupThreatListener();
+    const target = stage || canvas;
+    target.addEventListener('mousemove', (event) => { const rect = canvas.getBoundingClientRect(); mouse.tx = event.clientX - rect.left; mouse.ty = event.clientY - rect.top; mouse.active = true; }, { passive: true });
+    target.addEventListener('mouseleave', () => { mouse.active = false; mouse.tx = width / 2; mouse.ty = height / 2; }, { passive: true });
+    resizeObserver = new ResizeObserver(resizeCanvas); resizeObserver.observe(stage || canvas); document.addEventListener('visibilitychange', () => { running = !document.hidden; });
+    animate();
   }
 
   window.addEventListener('DOMContentLoaded', initBgCanvas);
