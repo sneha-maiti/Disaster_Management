@@ -37,7 +37,7 @@ def get_all_users():
     cursor.execute("SELECT* FROM users")
     user=cursor.fetchall()
     conn.close()
-    return users
+    return user
 
 
 

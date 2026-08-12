@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AETHER-X // Autonomous Planetary Resilience Network</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Orbitron:wght@600;700;800;900&family=Rajdhani:wght@600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Separate Stylesheet -->
+  <link rel="stylesheet" href="css/login.css">
+
+  <!-- Separate JavaScript -->
+  <script src="js/login.js" defer></script>
+</head>
+
+<body>
+
+  <!-- ==========================================================================
+       COMMAND CENTER 3D ROOM & WORLD MAP BACKGROUND
+       ========================================================================== -->
+  <div class="command-room-bg">
+    <!-- Animated Interactive World Map Canvas -->
+    <canvas id="world-map-canvas"></canvas>
+
+    <!-- Side Control Room Vignettes -->
+    <div class="room-arch-left"></div>
+    <div class="room-arch-right"></div>
+
+    <!-- 3D Hexagonal Grid Floor -->
+    <div class="hex-grid-floor"></div>
+
+    <!-- Holographic Pedestal projection ring at center bottom -->
+    <div class="holo-pedestal-wrap">
+      <div class="pedestal-light-cone"></div>
+      <div class="pedestal-ring-outer"></div>
+      <div class="pedestal-ring-inner"></div>
+      <div class="pedestal-ring-core"></div>
+    </div>
+  </div>
+
+
+  <!-- ==========================================================================
+       MAIN THREE-COLUMN INTERFACE
+       ========================================================================== -->
+  <main class="login-interface-container">
+
+    <!-- ==========================================================================
+         LEFT COLUMN: TELEMETRY WIDGETS
+         ========================================================================== -->
+    <aside class="left-column-telemetry">
+
+      <!-- Card 1: Active Rescue Ops -->
+      <div class="tech-widget-card">
+        <div class="widget-header">
+          <i data-lucide="crosshair"></i>
+          <span>ACTIVE RESCUE OPS</span>
+        </div>
+        <div class="widget-value-large" id="val-rescue-ops-num">
+          145
+        </div>
+        <div class="widget-subtitle">UNITS DEPLOYED</div>
+      </div>
+
+      <!-- Card 2: Seismic Index -->
+      <div class="tech-widget-card">
+        <div class="widget-header">
+          <i data-lucide="activity" style="color: var(--crimson);"></i>
+          <span style="color: var(--crimson);">SEISMIC INDEX</span>
+        </div>
+        <div class="widget-value-large crimson-val">
+          6.4 <span style="font-size: 0.9rem; font-family: var(--font-mono);">MAG</span>
+        </div>
+        <div class="widget-subtitle">MODERATE - HIGH ACTIVITY</div>
+      </div>
+
+      <!-- Card 3: Grid Readiness -->
+      <div class="tech-widget-card">
+        <div class="widget-header">
+          <i data-lucide="zap"></i>
+          <span>GRID READINESS</span>
+        </div>
+        <div class="widget-value-large">
+          94.8<span style="font-size: 1.2rem; font-family: var(--font-mono);">%</span>
+        </div>
+        <div class="widget-subtitle">SYSTEMS OPERATIONAL</div>
+      </div>
+
+      <!-- Card 4: Weather Alerts -->
+      <div class="tech-widget-card">
+        <div class="widget-header">
+          <i data-lucide="cloud-lightning"></i>
+          <span>WEATHER ALERTS</span>
+        </div>
+        <div class="widget-value-large crimson-val">
+          07
+        </div>
+        <div class="widget-subtitle">ACTIVE ZONES</div>
+      </div>
+
+    </aside>
+
+
+    <!-- ==========================================================================
+         CENTER COLUMN: SECURE ACCESS PORTAL (CHAMFERED GLOW CARD)
+         ========================================================================== -->
+    <section class="center-column-portal">
+      <div class="secure-portal-card" id="secure-portal-card">
+
+        <!-- Outer Corner Brackets -->
+        <div class="portal-corner-bracket c-tl"></div>
+        <div class="portal-corner-bracket c-tr"></div>
+        <div class="portal-corner-bracket c-bl"></div>
+        <div class="portal-corner-bracket c-br"></div>
+
+        <!-- Branding Header -->
+        <header class="portal-header">
+          <!-- Shield SVG Logo -->
+          <svg class="brand-shield-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Outer Shield Frame -->
+            <path d="M50 5 L90 20 V50 C90 72 50 95 50 95 C50 95 10 72 10 50 V20 L50 5 Z" fill="rgba(8, 14, 26, 0.9)"
+              stroke="#00f0ff" stroke-width="4" />
+            <!-- Inner Red Shield Fill -->
+            <path d="M50 14 L80 26 V48 C80 65 50 83 50 83 C50 83 20 65 20 48 V26 L50 14 Z" fill="rgba(255, 42, 75, 0.2)"
+              stroke="#ff2a4b" stroke-width="3" />
+            <!-- Center Red Inverted Triangle Ring -->
+            <polygon points="50,30 70,62 30,62" fill="none" stroke="#ff2a4b" stroke-width="4" />
+            <circle cx="50" cy="50" r="8" fill="#ff2a4b" />
+          </svg>
+
+          <h1 class="brand-main-title">AETHER<span>X</span></h1>
+          <p class="brand-sub-title">DISASTER MANAGEMENT PLATFORM</p>
+        </header>
+
+        <!-- Divider -->
+        <div class="tech-divider">SECURE ACCESS PORTAL</div>
+
+        <!-- Authentication Form -->
+        <form id="portal-login-form" onsubmit="handleLoginSubmit(event)" autocomplete="off">
+
+          <!-- Input 1: Emergency ID -->
+          <div class="portal-input-group">
+            <label for="emergency-id-input" class="input-label-text">EMERGENCY ID</label>
+            <div class="input-field-box">
+              <i data-lucide="user" class="input-icon-left"></i>
+              <input type="text" id="emergency-id-input" class="input-element" placeholder="DM-7842-ALPHA"
+                value="DM-7842-ALPHA" required />
+              <i data-lucide="id-card" class="input-icon-right"></i>
+            </div>
+          </div>
+
+          <!-- Input 2: Access PIN -->
+          <div class="portal-input-group" style="margin-top: 0.5rem;">
+            <label for="access-pin-input" class="input-label-text">ACCESS PIN</label>
+            <div class="input-field-box">
+              <i data-lucide="lock" class="input-icon-left"></i>
+              <input type="password" id="access-pin-input" class="input-element" placeholder="••••••••"
+                value="TacticalPIN2026" required />
+              <button type="button" style="background:none; border:none; cursor:pointer;"
+                onclick="togglePasswordVisibility()">
+                <i data-lucide="eye" class="input-icon-right" id="toggle-eye-icon"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Primary Login Button -->
+          <button type="submit" class="btn-initialize-login" id="btn-login-main">
+            <span>INITIALIZE SECURE LOGIN</span>
+            <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i>
+          </button>
+
+        </form>
+
+        <!-- Divider -->
+        <div class="tech-divider" style="margin-top: 0.2rem;">BIOMETRIC VERIFICATION</div>
+
+        <!-- Biometric Fingerprint Box -->
+        <div class="biometric-scanner-box" id="bio-scanner-box" onclick="triggerBiometricScan()">
+          <div class="laser-scan-bar"></div>
+          <div class="fingerprint-icon-wrap">
+            <i data-lucide="fingerprint"></i>
+          </div>
+          <div class="biometric-text-info">
+            <span class="biometric-title" id="bio-scan-title">PLACE FINGER ON SCAN</span>
+            <span class="biometric-sub" id="bio-scan-sub">OR TAP TO INITIATE</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ==========================================================================
+         RIGHT COLUMN: GLOBAL OVERVIEW & LIVE FEEDS
+         ========================================================================== -->
+    <aside class="right-column-overview">
+
+      <!-- Card 1: Global Disaster Overview -->
+      <div class="tech-widget-card">
+        <div class="widget-header">
+          <i data-lucide="globe"></i>
+          <span>GLOBAL DISASTER OVERVIEW</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.3rem;">
+          <div class="disaster-row-item">
+            <div class="disaster-label-group">
+              <i data-lucide="activity" style="color: var(--crimson);"></i>
+              <span>EARTHQUAKE</span>
+            </div>
+            <span class="disaster-count-num">23</span>
+          </div>
+          <div class="disaster-row-item">
+            <div class="disaster-label-group">
+              <i data-lucide="waves"></i>
+              <span>FLOOD</span>
+            </div>
+            <span class="disaster-count-num cyan-count">17</span>
+          </div>
+          <div class="disaster-row-item">
+            <div class="disaster-label-group">
+              <i data-lucide="disc" style="color: var(--crimson);"></i>
+              <span>CYCLONE</span>
+            </div>
+            <span class="disaster-count-num">09</span>
+          </div>
+          <div class="disaster-row-item">
+            <div class="disaster-label-group">
+              <i data-lucide="flame" style="color: var(--crimson);"></i>
+              <span>WILDFIRE</span>
+            </div>
+            <span class="disaster-count-num">11</span>
+          </div>
+          <div class="disaster-row-item">
+            <div class="disaster-label-group">
+              <i data-lucide="mountain" style="color: var(--amber);"></i>
+              <span>LANDSLIDE</span>
+            </div>
+            <span class="disaster-count-num amber-count">05</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Live Coordinates Feed -->
+      <div class="tech-widget-card">
+        <div class="widget-header">
+          <i data-lucide="navigation"></i>
+          <span>LIVE COORDINATES FEED</span>
+        </div>
+        <div class="coord-feed-list" style="margin-top: 0.3rem;">
+          <div class="coord-item-row">
+            <div class="coord-details">
+              <span class="coord-numbers">34.0522° N, 118.2437° W</span>
+              <span class="coord-city">LOS ANGELES, USA</span>
+            </div>
+            <span class="live-status-chip">LIVE</span>
+          </div>
+
+          <div class="coord-item-row">
+            <div class="coord-details">
+              <span class="coord-numbers">35.6895° N, 139.6917° E</span>
+              <span class="coord-city">TOKYO, JAPAN</span>
+            </div>
+            <span class="live-status-chip">LIVE</span>
+          </div>
+
+          <div class="coord-item-row">
+            <div class="coord-details">
+              <span class="coord-numbers">-33.8688° S, 151.2093° E</span>
+              <span class="coord-city">SYDNEY, AUSTRALIA</span>
+            </div>
+            <span class="live-status-chip">LIVE</span>
+          </div>
+
+          <div class="coord-item-row">
+            <div class="coord-details">
+              <span class="coord-numbers">51.5074° N, 0.1278° W</span>
+              <span class="coord-city">LONDON, UK</span>
+            </div>
+            <span class="live-status-chip">LIVE</span>
+          </div>
+
+          <div class="coord-item-row">
+            <div class="coord-details">
+              <span class="coord-numbers">19.0760° N, 72.8777° E</span>
+              <span class="coord-city">MUMBAI, INDIA</span>
+            </div>
+            <span class="live-status-chip">LIVE</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: System Telemetry -->
+      <div class="tech-widget-card">
+        <div class="widget-header">
+          <i data-lucide="cpu"></i>
+          <span>SYSTEM TELEMETRY</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 0.2rem; margin-top: 0.2rem;">
+          <div class="telemetry-item-row">
+            <span>SATELLITES LINKED</span>
+            <strong>23</strong>
+          </div>
+          <div class="telemetry-item-row">
+            <span>DRONES ACTIVE</span>
+            <strong>67</strong>
+          </div>
+          <div class="telemetry-item-row">
+            <span>COMMAND CENTERS</span>
+            <strong>08</strong>
+          </div>
+          <div class="telemetry-item-row">
+            <span>UPLINK STATUS</span>
+            <strong style="color: var(--cyan);">SECURE</strong>
+          </div>
+        </div>
+        <div class="utc-clock-display" id="utc-clock-value">
+          UTC 2026-08-12 07:23:45
+        </div>
+      </div>
+
+    </aside>
+
+  </main>
+
+</body>
+
+</html>
