@@ -42,7 +42,7 @@ def update_sos_status(sos_id,status):
 
 def get_available_teams():
     conn=get_db_connection()
-    cursor=conn.cursor
+    cursor=conn.cursor()
     cursor.execute("SELECT* FROM rescue_teams WHERE status='available'")
     teams=cursor.fetchall()
     conn.close()
@@ -51,7 +51,7 @@ def get_available_teams():
 
 def assign_team_to_sos(sos_id,team_id):
     conn=get_db_connection()
-    cursor=conn.cursor
+    cursor=conn.cursor()
 
     cursor.execute(
         "INSERT INTO assignments(sos_id,team_id) VALUES (?,?)",
