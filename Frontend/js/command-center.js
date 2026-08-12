@@ -167,3 +167,101 @@
 
   window.addEventListener('DOMContentLoaded', initCommandCenter);
 })();
+
+(function () {
+  'use strict';
+
+  const CONTAINER_ID = 'command-globe-container';
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  let stylesInjected = false;
+  let observer;
+  let globeRoot;
+
+  function injectStyles() {
+    if (stylesInjected) return;
+    const style = document.createElement('style');
+    style.id = 'aetherx-command-globe-premium-styles';
+    style.textContent = `
+      #command-globe-container { --globe-cyan:#4edbff; --globe-blue:#176cff; --globe-mint:#5dffd4; position:relative; isolation:isolate; overflow:hidden; background:radial-gradient(circle at 50% 48%,rgba(11,85,181,.18),transparent 28%),linear-gradient(145deg,#020914,#030d1b 58%,#020611); border:1px solid rgba(78,219,255,.28); box-shadow:0 0 0 1px rgba(255,255,255,.035) inset,0 0 65px rgba(20,121,255,.13),inset 0 0 70px rgba(12,88,179,.08); }
+      #command-globe-container::before { content:''; position:absolute; z-index:8; inset:0; pointer-events:none; background:radial-gradient(circle at var(--globe-mouse-x,50%) var(--globe-mouse-y,50%),rgba(95,228,255,.11),transparent 29%),linear-gradient(115deg,rgba(76,194,255,.06),transparent 26%,transparent 72%,rgba(63,109,255,.08)); mix-blend-mode:screen; }
+      #command-globe-container::after { content:''; position:absolute; z-index:9; inset:0; pointer-events:none; border:1px solid rgba(78,219,255,.12); background:linear-gradient(rgba(78,219,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(78,219,255,.02) 1px,transparent 1px); background-size:35px 35px; mask-image:linear-gradient(180deg,black,transparent 70%); }
+      #command-globe-container > canvas:first-child { position:relative; z-index:3; display:block; filter:saturate(1.32) contrast(1.15) brightness(1.04) drop-shadow(0 0 24px rgba(0,94,255,.32)); transition:filter .45s ease; }
+      #command-globe-container.globe-premium-engaged > canvas:first-child { filter:saturate(1.55) contrast(1.18) brightness(1.1) drop-shadow(0 0 35px rgba(0,123,255,.48)); }
+      #command-globe-container .premium-globe-overlay { position:absolute; z-index:7; inset:0; pointer-events:none; overflow:hidden; }
+      #command-globe-container .premium-globe-core { position:absolute; left:50%; top:50%; width:min(45%,260px); aspect-ratio:1; transform:translate(-50%,-50%); border-radius:50%; background:radial-gradient(circle at 34% 28%,rgba(169,238,255,.32),rgba(14,115,255,.12) 26%,transparent 59%); box-shadow:0 0 35px rgba(13,119,255,.28),inset -24px -18px 38px rgba(0,0,0,.45); opacity:.78; mix-blend-mode:screen; }
+      #command-globe-container .premium-globe-core::after { content:''; position:absolute; inset:-6%; border:1px solid rgba(80,203,255,.38); border-radius:50%; box-shadow:0 0 25px rgba(38,154,255,.28),inset 0 0 25px rgba(38,154,255,.16); animation:globeAtmosphere 4.8s ease-in-out infinite; }
+      #command-globe-container .premium-globe-ring { position:absolute; left:50%; top:50%; width:min(63%,365px); height:min(22%,118px); transform:translate(-50%,-50%) rotate(-18deg); border:1px solid rgba(89,213,255,.38); border-radius:50%; box-shadow:0 0 15px rgba(45,143,255,.18); animation:globeOrbit 9s linear infinite; }
+      #command-globe-container .premium-globe-ring::before, #command-globe-container .premium-globe-ring::after { content:''; position:absolute; border-radius:50%; border:1px dashed rgba(66,147,255,.24); }
+      #command-globe-container .premium-globe-ring::before { inset:-15% 8%; transform:rotate(30deg); } #command-globe-container .premium-globe-ring::after { inset:8% -13%; transform:rotate(-48deg); }
+      #command-globe-container .premium-globe-ring--two { width:min(72%,420px); height:min(26%,145px); transform:translate(-50%,-50%) rotate(47deg); opacity:.42; animation-duration:13s; animation-direction:reverse; }
+      #command-globe-container .premium-globe-orbit-dot { position:absolute; left:50%; top:50%; width:min(63%,365px); height:min(22%,118px); transform:translate(-50%,-50%) rotate(-18deg); border-radius:50%; animation:globeOrbit 5.2s linear infinite; }
+      #command-globe-container .premium-globe-orbit-dot::after { content:''; position:absolute; top:-3px; left:50%; width:6px; height:6px; border-radius:50%; background:#d9fbff; box-shadow:0 0 8px #4edbff,0 0 23px #176cff; }
+      #command-globe-container .premium-globe-pulse { position:absolute; left:50%; top:50%; width:min(45%,260px); aspect-ratio:1; transform:translate(-50%,-50%) scale(.32); border:1px solid rgba(80,210,255,.8); border-radius:50%; box-shadow:0 0 18px rgba(30,137,255,.32); opacity:0; animation:globePulse 4.4s ease-out infinite; }
+      #command-globe-container .premium-globe-pulse:nth-child(5) { animation-delay:1.45s; } #command-globe-container .premium-globe-pulse:nth-child(6) { animation-delay:2.9s; }
+      #command-globe-container .premium-globe-latitude { position:absolute; left:50%; top:50%; width:min(48%,278px); height:min(13%,72px); transform:translate(-50%,-50%) rotateX(68deg); border:1px solid rgba(74,177,255,.32); border-radius:50%; box-shadow:0 0 13px rgba(39,145,255,.14); animation:globeLatitude 5s ease-in-out infinite; }
+      #command-globe-container .premium-globe-latitude--two { transform:translate(-50%,-50%) rotateX(68deg) rotateZ(60deg); opacity:.5; animation-delay:-2.2s; }
+      #command-globe-container .premium-globe-scanline { position:absolute; left:24%; right:24%; top:18%; height:1px; background:linear-gradient(90deg,transparent,#a8f4ff,transparent); box-shadow:0 0 12px #4edbff; opacity:.44; animation:globeScan 6.5s linear infinite; }
+      #command-globe-container .premium-globe-readout { position:absolute; right:14px; bottom:13px; display:grid; gap:5px; padding:8px 10px; border:1px solid rgba(78,219,255,.2); border-radius:8px; background:rgba(2,10,24,.62); color:rgba(184,235,255,.7); font:600 7px/1.2 var(--font-mono,monospace); letter-spacing:.1em; box-shadow:0 10px 26px rgba(0,0,0,.3),inset 0 1px rgba(255,255,255,.08); backdrop-filter:blur(10px); }
+      #command-globe-container .premium-globe-readout strong { color:var(--globe-mint); }
+      @keyframes globeOrbit { to { transform:translate(-50%,-50%) rotate(342deg); } }
+      @keyframes globeAtmosphere { 50% { transform:scale(1.045); opacity:.6; } }
+      @keyframes globePulse { 0% { transform:translate(-50%,-50%) scale(.3); opacity:0; } 13% { opacity:.78; } 100% { transform:translate(-50%,-50%) scale(1.58); opacity:0; } }
+      @keyframes globeLatitude { 50% { transform:translate(-50%,-50%) rotateX(68deg) scaleX(1.08); opacity:.82; } }
+      @keyframes globeScan { 0% { transform:translateY(-20%); opacity:0; } 12% { opacity:.72; } 80% { opacity:.38; } 100% { transform:translateY(470%); opacity:0; } }
+      @media (max-width:720px) { #command-globe-container .premium-globe-readout { right:8px; bottom:8px; font-size:6px; } #command-globe-container .premium-globe-core { width:48%; } }
+      @media (prefers-reduced-motion:reduce) { #command-globe-container .premium-globe-ring, #command-globe-container .premium-globe-orbit-dot, #command-globe-container .premium-globe-pulse, #command-globe-container .premium-globe-core::after, #command-globe-container .premium-globe-latitude, #command-globe-container .premium-globe-scanline { animation:none; } }
+    `;
+    document.head.appendChild(style);
+    stylesInjected = true;
+  }
+
+  function addOverlay(container) {
+    if (container.querySelector('.premium-globe-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.className = 'premium-globe-overlay';
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.innerHTML = `
+      <span class="premium-globe-core"></span>
+      <span class="premium-globe-ring"></span>
+      <span class="premium-globe-ring premium-globe-ring--two"></span>
+      <span class="premium-globe-orbit-dot"></span>
+      <span class="premium-globe-pulse"></span>
+      <span class="premium-globe-pulse"></span>
+      <span class="premium-globe-pulse"></span>
+      <span class="premium-globe-latitude"></span>
+      <span class="premium-globe-latitude premium-globe-latitude--two"></span>
+      <span class="premium-globe-scanline"></span>
+      <span class="premium-globe-readout">GLOBE CORE <strong>ONLINE</strong><span>ATMOSPHERE LOCK 99.98%</span><span>PULSE RELAY <strong>STABLE</strong></span></span>
+    `;
+    container.appendChild(overlay);
+  }
+
+  function enhanceWhenReady() {
+    const container = document.getElementById(CONTAINER_ID);
+    if (!container || !container.querySelector('canvas')) return false;
+    if (container.dataset.premiumGlobeReady === 'true') return true;
+    container.dataset.premiumGlobeReady = 'true';
+    globeRoot = container;
+    injectStyles();
+    addOverlay(container);
+    container.addEventListener('pointermove', (event) => {
+      const rect = container.getBoundingClientRect();
+      container.style.setProperty('--globe-mouse-x', `${((event.clientX - rect.left) / rect.width) * 100}%`);
+      container.style.setProperty('--globe-mouse-y', `${((event.clientY - rect.top) / rect.height) * 100}%`);
+      container.classList.add('globe-premium-engaged');
+    }, { passive: true });
+    container.addEventListener('pointerleave', () => { container.classList.remove('globe-premium-engaged'); container.style.setProperty('--globe-mouse-x', '50%'); container.style.setProperty('--globe-mouse-y', '50%'); }, { passive: true });
+    return true;
+  }
+
+  function init() {
+    injectStyles();
+    if (enhanceWhenReady()) return;
+    observer = new MutationObserver(() => { if (enhanceWhenReady() && observer) observer.disconnect(); });
+    observer.observe(document.body, { childList: true, subtree: true });
+    window.addEventListener('pagehide', () => observer?.disconnect(), { once: true });
+  }
+
+  window.addEventListener('DOMContentLoaded', init);
+  window.AetherXCommandGlobePremium = { init };
+})();
