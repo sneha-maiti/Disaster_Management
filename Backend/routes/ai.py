@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, HTTPException
+from fastapi import APIRouter, status, HTTPException, UploadFile, File
 from pydantic import BaseModel, Field
 from typing import Optional
 from services.ai_service import analyze_disaster_with_gemini
@@ -15,6 +15,13 @@ class AIAnalysisResponse(BaseModel):
     threat_level: str
     recommended_action: str
     confidence: str
+
+class ImageUploadVerifyResponse(BaseModel):
+    filename: str
+    content_type: str
+    message: str
+
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic", "image/jpg"}
 
 @router.post("/analyze", response_model=AIAnalysisResponse, status_code=status.HTTP_200_OK)
 def analyze_disaster_incident(payload: AIAnalysisInput):
@@ -38,3 +45,23 @@ def analyze_disaster_incident(payload: AIAnalysisInput):
     )
     
     return result
+
+@router.post("/analyze-image", response_model=ImageUploadVerifyResponse, status_code=status.HTTP_200_OK)
+async def analyze_disaster_image(image: UploadFile = File(...)):
+    """
+    Verifies receipt of an uploaded incident evidence image (JPEG, PNG, WebP, HEIC).
+    Returns file metadata and confirmation message.
+    """
+    content_type = (image.content_type or "").lower()
+    if content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid file type. Only JPEG, PNG, WebP, and HEIC images are allowed."
+        )
+    
+    return {
+        "filename": image.filename or "unknown",
+        "content_type": image.content_type or "unknown",
+        "message": "Image received successfully"
+    }
+

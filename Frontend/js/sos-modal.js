@@ -6,6 +6,7 @@
   'use strict';
 
   let selectedLevel = 3;
+  let selectedFile = null;
   let gpsTimer = null;
   let dispatchTimer = null;
   let styleInjected = false;
@@ -92,6 +93,7 @@
     document.body.style.overflow = '';
     if (gpsTimer) { clearInterval(gpsTimer); gpsTimer = null; }
     if (dispatchTimer) { clearTimeout(dispatchTimer); dispatchTimer = null; }
+    selectedFile = null;
     const button = document.getElementById('sos-dispatch-execute-btn');
     if (button) { button.textContent = '((•)) EXECUTE SOS DISPATCH >>'; button.style.background = ''; button.style.boxShadow = ''; button.disabled = false; }
   }
@@ -133,11 +135,31 @@
     input.addEventListener('change', () => processFile(input.files?.[0]));
 
     function processFile(file) {
-      if (!file) return;
-      if (!file.type.startsWith('image/')) { preview.innerHTML = '<div class="p-2 rounded border border-rose-500/40 bg-rose-950/20 font-mono text-[9px] text-rose-300">IMAGE FILE REQUIRED</div>'; return; }
-      if (file.size > 10 * 1024 * 1024) { preview.innerHTML = '<div class="p-2 rounded border border-amber-500/40 bg-amber-950/20 font-mono text-[9px] text-amber-300">FILE EXCEEDS 10MB LIMIT</div>'; return; }
+      if (!file) { selectedFile = null; return; }
+      if (!file.type.startsWith('image/')) { selectedFile = null; preview.innerHTML = '<div class="p-2 rounded border border-rose-500/40 bg-rose-950/20 font-mono text-[9px] text-rose-300">IMAGE FILE REQUIRED</div>'; return; }
+      if (file.size > 10 * 1024 * 1024) { selectedFile = null; preview.innerHTML = '<div class="p-2 rounded border border-amber-500/40 bg-amber-950/20 font-mono text-[9px] text-amber-300">FILE EXCEEDS 10MB LIMIT</div>'; return; }
+      selectedFile = file;
       const url = URL.createObjectURL(file);
       preview.innerHTML = `<div class="p-2 rounded border border-emerald-500/40 bg-emerald-950/20 font-mono text-[9px] text-emerald-400">FILE LOADED: ${escapeHtml(file.name)} — Edge detection active</div><img src="${url}" alt="Uploaded incident evidence preview">`;
+    }
+  }
+
+  async function uploadImageToBackend(file) {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+      const response = await fetch('http://127.0.0.1:8000/api/ai/analyze-image', {
+        method: 'POST',
+        body: formData
+      });
+      if (!response.ok) {
+        console.warn('SOS image upload failed with status:', response.status);
+        return;
+      }
+      const data = await response.json();
+      console.log('SOS image uploaded successfully:', data);
+    } catch (error) {
+      console.error('Error uploading SOS image:', error);
     }
   }
 
@@ -150,9 +172,13 @@
     button.textContent = `DISPATCH CONFIRMED • LEVEL ${selectedLevel} ✓`;
     button.style.background = 'linear-gradient(135deg, #006622, #34C759)';
     button.style.boxShadow = '0 0 40px rgba(52,199,89,.7)';
+    if (selectedFile) {
+      uploadImageToBackend(selectedFile);
+    }
     dispatchTimer = setTimeout(closeModal, 1800);
   }
 
   window.triggerSosModal = openModal;
   window.addEventListener('DOMContentLoaded', initSosModal);
 })();
+
