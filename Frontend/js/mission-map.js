@@ -69,6 +69,9 @@
     setupFilterToggles();
     setupDrawerControls();
 
+    window.addEventListener('aether-sos-dispatched', loadAndRenderBackendSosMarkers);
+    window.setInterval(loadAndRenderBackendSosMarkers, 15000);
+
     map.whenReady(() => {
       window.setTimeout(() => map.invalidateSize({ animate: false }), 80);
     });
@@ -202,6 +205,52 @@
 
       marker.on('click', () => selectMapMarker(beacon.id));
     });
+
+    loadAndRenderBackendSosMarkers();
+  }
+
+  async function loadAndRenderBackendSosMarkers() {
+    if (!map || !markersGroup) return;
+    try {
+      const response = await fetch('/api/sos');
+      if (!response.ok) return;
+      const result = await response.json();
+      if (!result.success || !Array.isArray(result.data)) return;
+
+      result.data.forEach((sos) => {
+        const lat = sos.latitude || (sos.coordinates && sos.coordinates.lat);
+        const lng = sos.longitude || (sos.coordinates && sos.coordinates.lng);
+
+        if (typeof lat !== 'number' || typeof lng !== 'number') return;
+
+        const beaconData = {
+          id: sos.id || 'SOS',
+          queue: sos.id || '#LIVE',
+          title: sos.description || 'Emergency SOS Signal',
+          severity: sos.severity || 'high',
+          status: sos.status || 'DISPATCHED'
+        };
+
+        const marker = L.marker([lat, lng], {
+          icon: createBeaconIcon(beaconData),
+          keyboard: true,
+          title: `${sos.id}: ${sos.description}`,
+          riseOnHover: true,
+          pane: 'aether-markers'
+        }).addTo(markersGroup);
+
+        const popupContent = `
+          <div style="font-family: monospace; font-size: 11px; color: #fff; padding: 4px;">
+            <strong style="color: #ff4d64;">${escapeHtml(String(sos.id))}</strong> [${escapeHtml(String(sos.severity).toUpperCase())}]<br/>
+            <span style="color: #94a3b8;">${escapeHtml(sos.description || 'Emergency Dispatch')}</span><br/>
+            <small style="color: #34d399;">Status: ${escapeHtml(String(sos.status))}</small>
+          </div>
+        `;
+        marker.bindPopup(popupContent);
+      });
+    } catch (err) {
+      console.warn('Failed to load DB SOS markers:', err);
+    }
   }
 
   function createHazardIcon(hazard) {

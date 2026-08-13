@@ -4,12 +4,14 @@
 
 (function () {
   'use strict';
-
   let selectedLevel = 3;
   let selectedFile = null;
   let gpsTimer = null;
   let dispatchTimer = null;
   let styleInjected = false;
+  let currentLat = 22.5726;
+  let currentLng = 88.3639;
+  let currentLocationName = "Kolkata, West Bengal, India";
 
   const premiumStyles = `
     #sos-modal-backdrop { opacity: 0; visibility: hidden; transition: opacity .38s ease, visibility .38s ease; background: radial-gradient(circle at 50% 48%, rgba(112,0,18,.18), rgba(0,0,0,.96) 58%); }
@@ -101,16 +103,63 @@
   function startGpsTriangulation() {
     const coords = document.getElementById('gps-coords-display');
     const status = document.getElementById('gps-radar-status');
+    const locationLabel = coords?.nextElementSibling;
     if (!coords) return;
+
     if (gpsTimer) clearInterval(gpsTimer);
-    coords.textContent = 'TRIANGULATING SATELLITE RELAY...';
-    if (status) status.textContent = 'Scanning orbital sensors...';
-    let count = 0;
-    gpsTimer = setInterval(() => {
-      count += 1;
-      coords.textContent = `${(12.977 + (Math.random() - .5) * .02).toFixed(4)}°N ${(77.589 + (Math.random() - .5) * .02).toFixed(4)}°E`;
-      if (count > 5) { clearInterval(gpsTimer); gpsTimer = null; coords.textContent = '12°58\'37.1"N 77°35\'21.5"E'; if (status) status.textContent = 'Geospatial lock confirmed (±4.2m)'; }
-    }, 280);
+    coords.textContent = 'LOCATING GPS SATELLITES...';
+    if (status) status.textContent = 'Acquiring satellite lock...';
+
+    const fallbackKolkata = () => {
+      currentLat = 22.5726;
+      currentLng = 88.3639;
+      currentLocationName = "Kolkata, West Bengal, India";
+      coords.textContent = '22.5726°N 88.3639°E';
+      if (locationLabel) locationLabel.textContent = currentLocationName;
+      if (status) status.textContent = 'GPS Fallback Active (Kolkata Sector V)';
+    };
+
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          currentLat = position.coords.latitude;
+          currentLng = position.coords.longitude;
+
+          const latText = `${Math.abs(currentLat).toFixed(4)}°${currentLat >= 0 ? 'N' : 'S'}`;
+          const lngText = `${Math.abs(currentLng).toFixed(4)}°${currentLng >= 0 ? 'E' : 'W'}`;
+          coords.textContent = `${latText} ${lngText}`;
+
+          if (status) {
+            const accuracy = position.coords.accuracy ? ` (±${Math.round(position.coords.accuracy)}m)` : '';
+            status.textContent = `Geospatial lock confirmed${accuracy}`;
+          }
+
+          try {
+            const res = await fetch('/api/maps/reverse-geocode', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ latitude: currentLat, longitude: currentLng })
+            });
+            if (res.ok) {
+              const data = await res.json();
+              if (data.formatted_address) {
+                currentLocationName = data.formatted_address;
+                if (locationLabel) locationLabel.textContent = currentLocationName;
+              }
+            }
+          } catch (err) {
+            console.warn('Reverse-geocoding request failed:', err);
+          }
+        },
+        (error) => {
+          console.warn('GPS error, using fallback:', error.message);
+          fallbackKolkata();
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      );
+    } else {
+      fallbackKolkata();
+    }
   }
 
   function setupSeverityCards() {
@@ -148,7 +197,7 @@
     try {
       const formData = new FormData();
       formData.append('image', file);
-      const response = await fetch('http://127.0.0.1:8000/api/ai/analyze-image', {
+      const response = await fetch('/api/ai/analyze-image', {
         method: 'POST',
         body: formData
       });
@@ -165,13 +214,42 @@
 
   function escapeHtml(value) { return String(value).replace(/[&<>'"]/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character])); }
 
-  function executeDispatch() {
+  async function executeDispatch() {
     const button = document.getElementById('sos-dispatch-execute-btn');
     if (!button) return;
     button.disabled = true;
     button.textContent = `DISPATCH CONFIRMED • LEVEL ${selectedLevel} ✓`;
     button.style.background = 'linear-gradient(135deg, #006622, #34C759)';
     button.style.boxShadow = '0 0 40px rgba(52,199,89,.7)';
+
+    try {
+      const sosPayload = {
+        reporter_name: "Emergency Command Dispatcher",
+        phone: "+91 9876543210",
+        latitude: currentLat,
+        longitude: currentLng,
+        location_name: currentLocationName,
+        description: `Emergency Level ${selectedLevel} SOS alert dispatched from ${currentLocationName}.`,
+        user_severity: selectedLevel
+      };
+
+      const response = await fetch('/api/sos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sosPayload)
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('SOS signal successfully saved to backend:', data);
+        window.dispatchEvent(new CustomEvent('aether-sos-dispatched', { detail: data }));
+      } else {
+        console.warn('POST /api/sos status:', response.status);
+      }
+    } catch (err) {
+      console.error('Error dispatching SOS to backend:', err);
+    }
+
     if (selectedFile) {
       uploadImageToBackend(selectedFile);
     }
@@ -181,4 +259,5 @@
   window.triggerSosModal = openModal;
   window.addEventListener('DOMContentLoaded', initSosModal);
 })();
+
 

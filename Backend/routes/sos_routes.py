@@ -35,6 +35,8 @@ def get_all_sos():
         formatted_data.append({
             "id": f"SOS-{req['id']}",
             "user_id": req["user_id"],
+            "latitude": req["latitude"],
+            "longitude": req["longitude"],
             "coordinates": {
                 "lat": req["latitude"],
                 "lng": req["longitude"]
