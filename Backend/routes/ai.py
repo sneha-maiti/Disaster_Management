@@ -1,7 +1,8 @@
 from fastapi import APIRouter, status, HTTPException, UploadFile, File
 from pydantic import BaseModel, Field
 from typing import Optional
-from services.ai_service import analyze_disaster_with_gemini
+from services.ai_service import analyze_disaster_with_gemini, analyze_disaster_image_with_gemini
+from models.ai_analysis import save_ai_analysis
 
 router = APIRouter(prefix="/api/ai", tags=["AI Intelligence"])
 
@@ -26,7 +27,7 @@ ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/heic", "i
 @router.post("/analyze", response_model=AIAnalysisResponse, status_code=status.HTTP_200_OK)
 def analyze_disaster_incident(payload: AIAnalysisInput):
     """
-    Sends disaster details to Google Gemini LLM API (gemini-1.5-flash) and returns structured JSON analysis:
+    Sends disaster details to Google Gemini LLM API (gemini-2.5-flash) and returns structured JSON analysis:
     - analysis
     - threat_level
     - recommended_action
@@ -46,11 +47,11 @@ def analyze_disaster_incident(payload: AIAnalysisInput):
     
     return result
 
-@router.post("/analyze-image", response_model=ImageUploadVerifyResponse, status_code=status.HTTP_200_OK)
+@router.post("/analyze-image", response_model=AIAnalysisResponse, status_code=status.HTTP_200_OK)
 async def analyze_disaster_image(image: UploadFile = File(...)):
     """
-    Verifies receipt of an uploaded incident evidence image (JPEG, PNG, WebP, HEIC).
-    Returns file metadata and confirmation message.
+    Sends uploaded disaster scene incident image (JPEG, PNG, WebP, HEIC) to Google Gemini API,
+    saves the AI analysis to SQLite database, and returns structured tactical analysis JSON.
     """
     content_type = (image.content_type or "").lower()
     if content_type not in ALLOWED_IMAGE_TYPES:
@@ -59,9 +60,26 @@ async def analyze_disaster_image(image: UploadFile = File(...)):
             detail="Invalid file type. Only JPEG, PNG, WebP, and HEIC images are allowed."
         )
     
-    return {
-        "filename": image.filename or "unknown",
-        "content_type": image.content_type or "unknown",
-        "message": "Image received successfully"
-    }
+    image_bytes = await image.read()
+    if not image_bytes:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Uploaded file is empty."
+        )
+
+    result = analyze_disaster_image_with_gemini(
+        image_bytes=image_bytes,
+        mime_type=content_type
+    )
+
+    save_ai_analysis(
+        filename=image.filename,
+        mime_type=content_type,
+        analysis=result["analysis"],
+        threat_level=result["threat_level"],
+        recommended_action=result["recommended_action"],
+        confidence=result["confidence"]
+    )
+
+    return result
 

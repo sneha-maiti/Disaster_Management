@@ -61,17 +61,13 @@ CREATE TABLE IF NOT EXISTS assignments(
     assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(sos_id) REFERENCES sos_requests(id) ON DELETE CASCADE,
     FOREIGN KEY(team_id) REFERENCES rescue_teams(id) ON DELETE CASCADE);
-    
-    
-    
 
-
-
-
-
-
-
-
-
-
-        
+CREATE TABLE IF NOT EXISTS ai_analyses(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    filename TEXT,
+    mime_type TEXT,
+    analysis TEXT NOT NULL,
+    threat_level TEXT NOT NULL,
+    recommended_action TEXT NOT NULL,
+    confidence TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
