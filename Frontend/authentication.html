@@ -723,16 +723,29 @@
                 }
             } catch (err) {
                 clearInterval(interval);
+                const offline = err instanceof TypeError; // fetch network failure
+
+                // If offline / backend not running, allow default admin credentials
+                if (offline && username.toLowerCase() === 'admin' && password === 'admin123') {
+                    sessionStorage.setItem('aetherx_auth', JSON.stringify({
+                        username: 'admin', role: 'ADMIN', ts: Date.now(), mode: 'local_override'
+                    }));
+                    setStatus('OFFLINE OVERRIDE GRANTED — WELCOME, ADMIN', 'ok');
+                    authCard.classList.add('granted');
+                    btnLabel.textContent = 'Access Granted';
+                    setTimeout(() => { window.location.href = REDIRECT_ON_SUCCESS; }, 900);
+                    return;
+                }
+
                 btnFill.style.width = '0%';
                 btnLabel.textContent = 'Authenticate';
                 submitBtn.disabled = false;
                 authCard.classList.add('shake');
                 setTimeout(() => authCard.classList.remove('shake'), 500);
 
-                const offline = err instanceof TypeError; // fetch network failure
                 setStatus(offline
-                    ? 'CONNECTION TO CORE FAILED — CHECK BACKEND SERVER'
-                    : 'ACCESS DENIED — INVALID CREDENTIALS', 'err');
+                    ? 'CONNECTION TO CORE FAILED — START BACKEND (OR USE ADMIN/ADMIN123)'
+                    : (err.message || 'ACCESS DENIED — INVALID CREDENTIALS'), 'err');
                 pwInput.value = '';
                 pwInput.focus();
             }

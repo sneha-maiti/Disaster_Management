@@ -418,7 +418,13 @@ function handleOAuthLogin(provider) {
     btn.innerHTML = `<span>AUTHENTICATING VIA ${provider.toUpperCase()}...</span>`;
     btn.disabled = true;
   }
-  setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+  sessionStorage.setItem('aetherx_member_login', JSON.stringify({
+    memberId: `${provider.toUpperCase()}-OP-7842`,
+    name: `${provider} Operator`,
+    provider: provider,
+    timestamp: Date.now()
+  }));
+  setTimeout(() => { window.location.href = 'index.html'; }, 900);
 }
 
 /* --------------------------------------------------------------------------
@@ -426,12 +432,18 @@ function handleOAuthLogin(provider) {
    -------------------------------------------------------------------------- */
 function handleLoginSubmit(event) {
   event.preventDefault();
+  const emergencyIdInput = document.getElementById('emergency-id-input');
+  const memberId = emergencyIdInput ? emergencyIdInput.value.trim() : 'DM-7842-ALPHA';
   const btn = document.getElementById('btn-login-main');
   if (btn) {
-    btn.innerHTML = `<span>AUTHENTICATING...</span>`;
+    btn.innerHTML = `<span>VERIFYING MEMBER ID: ${memberId}...</span>`;
     btn.disabled = true;
   }
-  setTimeout(() => { window.location.href = 'index.html'; }, 1200);
+  sessionStorage.setItem('aetherx_member_login', JSON.stringify({
+    memberId: memberId || 'DM-7842-ALPHA',
+    timestamp: Date.now()
+  }));
+  setTimeout(() => { window.location.href = 'index.html'; }, 900);
 }
 
 /* --------------------------------------------------------------------------

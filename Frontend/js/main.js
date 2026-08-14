@@ -4,11 +4,172 @@
 
 (function () {
   function initMainController() {
+    setupAuthHeader();
+    setupStep2Modal();
     startUtcClock();
     startThreatCountdown();
     setupTabNavigation();
     setupLogoHome();
     setupMobileMenu();
+  }
+
+  function isStep1Auth() {
+    try {
+      const auth = sessionStorage.getItem('aetherx_auth');
+      return !!auth && !!JSON.parse(auth)?.username;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function isMemberLoggedIn() {
+    try {
+      const mem = sessionStorage.getItem('aetherx_member_login');
+      return !!mem && !!JSON.parse(mem)?.memberId;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function getMemberData() {
+    try {
+      return JSON.parse(sessionStorage.getItem('aetherx_member_login')) || {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function setupAuthHeader() {
+    if (!isStep1Auth()) {
+      window.location.replace('authentication.html');
+      return;
+    }
+
+    const memberLoggedIn = isMemberLoggedIn();
+    const memberData = getMemberData();
+
+    const step2LoginBtn = document.getElementById('btn-step2-login');
+    const authUserBadge = document.getElementById('auth-user-badge');
+    const userDisplay = document.getElementById('auth-username-display');
+    const roleDisplay = document.getElementById('auth-role-badge');
+    const lockIndicators = document.querySelectorAll('.lock-indicator');
+
+    const step2Card = document.getElementById('step2-status-card');
+    const step2BadgeTitle = document.getElementById('step2-badge-title');
+    const step2LevelTag = document.getElementById('step2-level-tag');
+    const step2DescText = document.getElementById('step2-desc-text');
+    const step2IndicatorTag = document.getElementById('step2-indicator-tag');
+    const step2ActionLink = document.getElementById('step2-action-link');
+    const step2PulseDot = document.getElementById('step2-pulse-dot');
+
+    if (!memberLoggedIn) {
+      // Step 2 Pending State
+      if (step2LoginBtn) step2LoginBtn.classList.remove('hidden');
+      if (authUserBadge) {
+        authUserBadge.classList.remove('flex');
+        authUserBadge.classList.add('hidden');
+      }
+      lockIndicators.forEach(el => el.classList.remove('hidden'));
+
+      if (step2Card) {
+        step2Card.className = "p-3.5 rounded-xl border border-amber-500/40 bg-gradient-to-r from-amber-950/40 via-slate-900/80 to-cyan-950/40 shadow-[0_0_20px_rgba(245,158,11,0.2)] font-mono text-xs";
+      }
+      if (step2BadgeTitle) {
+        step2BadgeTitle.className = "text-amber-400 font-bold flex items-center gap-1.5";
+        step2BadgeTitle.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span> TWO-STEP VERIFICATION: STEP 2 REQUIRED';
+      }
+      if (step2LevelTag) {
+        step2LevelTag.className = "text-amber-300 text-[10px] bg-amber-950/80 px-2 py-0.5 rounded border border-amber-500/40 font-bold";
+        step2LevelTag.textContent = "CLEARANCE: 1/2";
+      }
+      if (step2IndicatorTag) {
+        step2IndicatorTag.className = "text-amber-400 font-bold flex items-center gap-1";
+        step2IndicatorTag.innerHTML = '<span>●</span> Step 2: Member Login Pending';
+      }
+      if (step2ActionLink) {
+        step2ActionLink.style.display = "inline-flex";
+      }
+    } else {
+      // Step 2 Completed State
+      if (step2LoginBtn) step2LoginBtn.classList.add('hidden');
+      if (authUserBadge) {
+        authUserBadge.classList.remove('hidden');
+        authUserBadge.classList.add('flex');
+      }
+      if (userDisplay && memberData.memberId) {
+        userDisplay.textContent = memberData.memberId.toUpperCase();
+      }
+      if (roleDisplay) {
+        roleDisplay.textContent = "2-STEP VERIFIED";
+      }
+      lockIndicators.forEach(el => el.classList.add('hidden'));
+
+      if (step2Card) {
+        step2Card.className = "p-3.5 rounded-xl border border-emerald-500/40 bg-gradient-to-r from-emerald-950/30 via-slate-900/80 to-cyan-950/30 shadow-[0_0_20px_rgba(52,211,153,0.15)] font-mono text-xs";
+      }
+      if (step2BadgeTitle) {
+        step2BadgeTitle.className = "text-emerald-400 font-bold flex items-center gap-1.5";
+        step2BadgeTitle.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> TWO-STEP VERIFICATION: FULL ACCESS GRANTED';
+      }
+      if (step2LevelTag) {
+        step2LevelTag.className = "text-emerald-300 text-[10px] bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40 font-bold";
+        step2LevelTag.textContent = "CLEARANCE: 2/2 COMPLETE";
+      }
+      if (step2DescText) {
+        step2DescText.innerHTML = `Welcome operator <strong>${memberData.memberId || 'VERIFIED'}</strong>. Full Planetary Command Dashboard authorization is active across all network modules.`;
+      }
+      if (step2IndicatorTag) {
+        step2IndicatorTag.className = "text-emerald-400 font-bold flex items-center gap-1";
+        step2IndicatorTag.innerHTML = `<span>✓</span> Step 2: Member Active (${memberData.memberId || 'VERIFIED'})`;
+      }
+      if (step2ActionLink) {
+        step2ActionLink.className = "px-3 py-1.5 rounded-lg bg-emerald-950 border border-emerald-400/50 text-emerald-300 font-mono text-[10px] font-bold";
+        step2ActionLink.innerHTML = "<span>ACCESS UNLOCKED ✓</span>";
+        step2ActionLink.href = "#";
+        step2ActionLink.onclick = (e) => { e.preventDefault(); switchTab('tab-view-command'); };
+      }
+    }
+
+    const logoutBtn = document.getElementById('auth-logout-btn');
+    if (logoutBtn) {
+      logoutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        sessionStorage.removeItem('aetherx_auth');
+        sessionStorage.removeItem('aetherx_member_login');
+        window.location.href = 'authentication.html';
+      });
+    }
+  }
+
+  function showStep2RequiredModal(targetTabName) {
+    const modal = document.getElementById('modal-step2-required');
+    const tabNameEl = document.getElementById('modal-target-tab-name');
+    if (tabNameEl) {
+      const cleanName = (targetTabName || 'DASHBOARD')
+        .replace('tab-view-', '')
+        .replace('-', ' ')
+        .toUpperCase();
+      tabNameEl.textContent = cleanName;
+    }
+    if (modal) {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+  }
+
+  function hideStep2RequiredModal() {
+    const modal = document.getElementById('modal-step2-required');
+    if (modal) {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+  }
+
+  function setupStep2Modal() {
+    const closeBtn = document.getElementById('close-step2-modal');
+    const cancelBtn = document.getElementById('cancel-step2-modal');
+    if (closeBtn) closeBtn.addEventListener('click', hideStep2RequiredModal);
+    if (cancelBtn) cancelBtn.addEventListener('click', hideStep2RequiredModal);
   }
 
   function startUtcClock() {
@@ -63,6 +224,12 @@
   }
 
   function switchTab(targetTabId) {
+    // Two-Step Verification Check for Dashboard Tabs
+    if (targetTabId !== 'tab-view-overview' && !isMemberLoggedIn()) {
+      showStep2RequiredModal(targetTabId);
+      return;
+    }
+
     document.querySelectorAll('.screenshot-view-tab').forEach(tab => {
       tab.classList.toggle('active', tab.id === targetTabId);
     });
