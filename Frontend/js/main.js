@@ -267,6 +267,40 @@
     });
   }
 
+  function checkUrlTabParam() {
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      const hash = window.location.hash.replace('#', '').toLowerCase();
+
+      let targetTab = null;
+      if (tabParam === 'matrix' || tabParam === 'tab-view-matrix' || hash === 'matrix' || hash === 'tab-view-matrix') {
+        targetTab = 'tab-view-matrix';
+      } else if (tabParam === 'command' || tabParam === 'tab-view-command' || hash === 'command' || hash === 'tab-view-command') {
+        targetTab = 'tab-view-command';
+      } else if (tabParam === 'map' || tabParam === 'tab-view-map' || hash === 'map' || hash === 'tab-view-map') {
+        targetTab = 'tab-view-map';
+      } else if (tabParam === 'ai-vision' || tabParam === 'vision' || tabParam === 'tab-view-ai-vision' || hash === 'vision' || hash === 'ai-vision' || hash === 'tab-view-ai-vision') {
+        targetTab = 'tab-view-ai-vision';
+      }
+
+      if (targetTab) {
+        setTimeout(() => switchTab(targetTab), 50);
+      }
+    } catch (e) {}
+  }
+
+  function initMainController() {
+    setupAuthHeader();
+    setupStep2Modal();
+    startUtcClock();
+    startThreatCountdown();
+    setupTabNavigation();
+    setupLogoHome();
+    setupMobileMenu();
+    checkUrlTabParam();
+  }
+
   window.switchTab = switchTab;
   window.addEventListener('DOMContentLoaded', initMainController);
 })();
