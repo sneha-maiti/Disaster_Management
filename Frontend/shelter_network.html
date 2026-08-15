@@ -1,0 +1,938 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+         <meta charset="utf-8">
+         <meta name="viewport" content="width=device-width,initial-scale=1">
+         <title>AETHER-X // Emergency Response Relay</title>
+         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+         <style>
+                  @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+                  :root {
+                           --bg: #040913;
+                           --panel: #091424e8;
+                           --panel2: #0d1d31;
+                           --line: #77bdff24;
+                           --text: #f4f8ff;
+                           --muted: #8498b3;
+                           --cyan: #65eaff;
+                           --blue: #5aaeff;
+                           --purple: #a18dff;
+                           --amber: #f70c1f;
+                           --red: #ff687e;
+                           --green: #5de1a4;
+                           --mx: 50%;
+                           --my: 50%
+                  }
+
+                  * {
+                           box-sizing: border-box
+                  }
+
+                  html,
+                  body {
+                           margin: 0;
+                           min-height: 100%;
+                           background: var(--bg);
+                           color: var(--text);
+                           font-family: 'Space Grotesk', sans-serif
+                  }
+
+                  body {
+                           overflow-x: hidden;
+                           background: radial-gradient(circle at var(--mx) var(--my), #2586d921, transparent 31rem), radial-gradient(circle at 82% 0, #7257df1e, transparent 35rem), var(--bg)
+                  }
+
+                  body:before {
+                           content: "";
+                           position: fixed;
+                           inset: 0;
+                           pointer-events: none;
+                           opacity: .2;
+                           background-image: linear-gradient(#85c3ff10 1px, transparent 1px), linear-gradient(90deg, #85c3ff10 1px, transparent 1px);
+                           background-size: 55px 55px;
+                           mask-image: linear-gradient(#000, transparent 90%)
+                  }
+
+                  body:after {
+                           content: "";
+                           position: fixed;
+                           inset: 0;
+                           pointer-events: none;
+                           background: linear-gradient(115deg, transparent 14%, #65eaff08 50%, transparent 58%);
+                           animation: sweep 10s linear infinite;
+                           z-index: -1
+                  }
+
+                  @keyframes sweep {
+                           to {
+                                    transform: translateX(70%)
+                           }
+                  }
+
+                  @keyframes pulse {
+                           50% {
+                                    opacity: .35;
+                                    transform: scale(.65)
+                           }
+                  }
+
+                  @keyframes blink {
+                           50% {
+                                    opacity: .3
+                           }
+                  }
+
+                  @keyframes scan {
+                           from {
+                                    transform: translateY(-100%)
+                           }
+
+                           to {
+                                    transform: translateY(700%)
+                           }
+                  }
+
+                  .shell {
+                           width: min(1500px, calc(100% - 34px));
+                           margin: auto
+                  }
+
+                  .topbar {
+                           height: 74px;
+                           border-bottom: 1px solid var(--line);
+                           display: flex;
+                           align-items: center;
+                           justify-content: space-between
+                  }
+
+                  .brand {
+                           display: flex;
+                           align-items: center;
+                           gap: 13px;
+                           font: 500 12px 'DM Mono';
+                           letter-spacing: .16em
+                  }
+
+                  .brand-icon {
+                           width: 29px;
+                           height: 29px;
+                           border: 1px solid var(--cyan);
+                           border-radius: 9px;
+                           transform: rotate(45deg);
+                           box-shadow: 0 0 28px #65eaff55;
+                           position: relative
+                  }
+
+                  .brand-icon:after {
+                           content: "";
+                           position: absolute;
+                           inset: 8px;
+                           background: var(--cyan);
+                           border-radius: 3px;
+                           box-shadow: 0 0 15px var(--cyan)
+                  }
+
+                  .system {
+                           display: flex;
+                           align-items: center;
+                           gap: 9px;
+                           color: var(--muted);
+                           font: 10px 'DM Mono'
+                  }
+
+                  .dot {
+                           width: 7px;
+                           height: 7px;
+                           background: var(--green);
+                           border-radius: 50%;
+                           box-shadow: 0 0 15px var(--green);
+                           animation: pulse 1.8s infinite
+                  }
+
+                  .hero {
+                           padding: 52px 0 28px;
+                           display: flex;
+                           justify-content: space-between;
+                           align-items: end;
+                           gap: 30px
+                  }
+
+                  .eyebrow {
+                           color: var(--cyan);
+                           font: 10px 'DM Mono';
+                           letter-spacing: .15em;
+                           text-transform: uppercase
+                  }
+
+                  .hero h1 {
+                           font-size: clamp(42px, 5.7vw, 76px);
+                           line-height: .95;
+                           letter-spacing: -.08em;
+                           margin: 15px 0 20px
+                  }
+
+                  .hero h1 em {
+                           font-style: normal;
+                           color: transparent;
+                           -webkit-text-stroke: 1px var(--purple);
+                           text-shadow: 0 0 30px #a18dff55
+                  }
+
+                  .lede {
+                           max-width: 820px;
+                           margin: 0;
+                           color: #acbed4;
+                           font-size: 15px;
+                           line-height: 1.65
+                  }
+
+                  .mode-pill {
+                           border: 1px solid #65eaff45;
+                           background: #65eaff08;
+                           color: var(--cyan);
+                           border-radius: 99px;
+                           padding: 12px 15px;
+                           white-space: nowrap;
+                           font: 10px 'DM Mono'
+                  }
+
+                  .dashboard {
+                           display: grid;
+                           grid-template-columns: 1fr 360px;
+                           gap: 18px
+                  }
+
+                  .panel {
+                           background: linear-gradient(135deg, #ff0c55, transparent 30%), var(--panel);
+                           border: 1px solid var(--line);
+                           border-radius: 24px;
+                           box-shadow: 0 28px 90px #0009, inset 0 1px #ff0b0b;
+                           backdrop-filter: blur(18px);
+                           position: relative;
+                           overflow: hidden
+                  }
+
+                  .panel:after {
+                           content: "";
+                           position: absolute;
+                           inset: 0;
+                           pointer-events: none;
+                           background: linear-gradient(110deg, transparent 15%, #65eaff09 50%, transparent 78%);
+                           transform: translateX(-100%);
+                           transition: transform .8s
+                  }
+
+                  .panel:hover:after {
+                           transform: translateX(100%)
+                  }
+
+                  .map-panel {
+                           height: 720px;
+                           padding: 12px
+                  }
+
+                  .map-head {
+                           height: 48px;
+                           display: flex;
+                           justify-content: space-between;
+                           align-items: center;
+                           padding: 0 7px 10px;
+                           position: relative;
+                           z-index: 3
+                  }
+
+                  .map-head strong {
+                           font-size: 15px
+                  }
+
+                  .map-controls {
+                           display: flex;
+                           gap: 7px;
+                           align-items: center
+                  }
+
+                  .button {
+                           height: 33px;
+                           border: 1px solid var(--line);
+                           background: #071526e8;
+                           color: #d3e6fb;
+                           border-radius: 10px;
+                           padding: 0 12px;
+                           font: 10px 'DM Mono';
+                           cursor: pointer;
+                           transition: .2s
+                  }
+
+                  .button:hover {
+                           border-color: var(--cyan);
+                           color: var(--cyan);
+                           transform: translateY(-1px);
+                           box-shadow: 0 0 18px #65eaff26
+                  }
+
+                  .button.primary {
+                           background: linear-gradient(135deg, var(--cyan), var(--blue));
+                           color: #05111e;
+                           border: 0;
+                           font-weight: 600
+                  }
+
+                  .search {
+                           height: 33px;
+                           width: 190px;
+                           background: #071526e8;
+                           border: 1px solid var(--line);
+                           border-radius: 10px;
+                           padding: 0 10px;
+                           color: var(--text);
+                           font: 10px 'DM Mono';
+                           outline: 0
+                  }
+
+                  .search:focus {
+                           border-color: var(--cyan)
+                  }
+
+                  #map {
+                           height: calc(100% - 48px);
+                           min-height: 620px;
+                           border-radius: 17px;
+                           overflow: hidden;
+                           background: #071526
+                  }
+
+                  .leaflet-container {
+                           background: #071526;
+                           font-family: 'DM Mono'
+                  }
+
+                  .leaflet-tile {
+                           filter: brightness(.53) saturate(.62) hue-rotate(165deg) contrast(1.12)
+                  }
+
+                  .leaflet-control-zoom a {
+                           background: #08182be8 !important;
+                           color: #d7ebff !important;
+                           border-color: #6ab8ff33 !important
+                  }
+
+                  .leaflet-control-attribution {
+                           background: #061020d8 !important;
+                           color: #8da8c6 !important;
+                           font-size: 9px !important
+                  }
+
+                  .leaflet-control-attribution a {
+                           color: #75caff !important
+                  }
+
+                  .marker {
+                           width: 19px;
+                           height: 19px;
+                           border-radius: 50%;
+                           border: 2px solid #effcff;
+                           background: var(--c);
+                           box-shadow: 0 0 0 5px var(--halo), 0 0 22px var(--c);
+                           animation: markerPulse 2s infinite
+                  }
+
+                  @keyframes markerPulse {
+                           50% {
+                                    box-shadow: 0 0 0 11px transparent, 0 0 28px var(--c)
+                           }
+                  }
+
+                  .location-ring {
+                           width: 23px;
+                           height: 23px;
+                           border: 2px solid var(--cyan);
+                           border-radius: 50%;
+                           box-shadow: 0 0 0 7px #65eaff26, 0 0 30px var(--cyan);
+                           animation: markerPulse 2s infinite
+                  }
+
+                  .side {
+                           display: flex;
+                           flex-direction: column;
+                           gap: 15px
+                  }
+
+                  .side-section {
+                           padding: 19px 20px
+                  }
+
+                  .side h2 {
+                           font-size: 18px;
+                           margin: 8px 0 0
+                  }
+
+                  .side-head {
+                           display: flex;
+                           justify-content: space-between;
+                           align-items: start
+                  }
+
+                  .tiny {
+                           font: 9px 'DM Mono';
+                           color: var(--muted);
+                           text-transform: uppercase
+                  }
+
+                  .stats {
+                           display: grid;
+                           grid-template-columns: 1fr 1fr;
+                           gap: 10px
+                  }
+
+                  .stat {
+                           padding: 13px;
+                           border: 1px solid #ff0d1d;
+                           border-radius: 13px;
+                           background: #ffffff05
+                  }
+
+                  .stat span {
+                           display: block;
+                           color: var(--muted);
+                           font: 9px 'DM Mono';
+                           text-transform: uppercase;
+                           margin-bottom: 8px
+                  }
+
+                  .stat strong {
+                           font-size: 23px;
+                           letter-spacing: -.06em
+                  }
+
+                  .stat small {
+                           display: block;
+                           color: #8093ac;
+                           font: 9px 'DM Mono';
+                           margin-top: 5px
+                  }
+
+                  .location-box {
+                           padding: 14px;
+                           border: 1px solid #65eaff37;
+                           border-radius: 14px;
+                           background: #65eaff08;
+                           color: #b8cce2;
+                           font-size: 12px;
+                           line-height: 1.5
+                  }
+
+                  .location-box b {
+                           display: block;
+                           color: var(--cyan);
+                           margin-bottom: 4px
+                  }
+
+                  .facility-list {
+                           max-height: 215px;
+                           overflow: auto
+                  }
+
+                  .facility {
+                           display: flex;
+                           align-items: center;
+                           gap: 10px;
+                           padding: 10px 0;
+                           border-bottom: 1px solid #ff0d0d;
+                           cursor: pointer
+                  }
+
+                  .facility:last-child {
+                           border: 0
+                  }
+
+                  .facility-icon {
+                           width: 10px;
+                           height: 10px;
+                           border-radius: 50%;
+                           background: var(--fc);
+                           box-shadow: 0 0 11px var(--fc);
+                           flex: 0 0 auto
+                  }
+
+                  .facility-info {
+                           min-width: 0;
+                           flex: 1
+                  }
+
+                  .facility-info b {
+                           display: block;
+                           white-space: nowrap;
+                           overflow: hidden;
+                           text-overflow: ellipsis;
+                           color: #d5e4f3;
+                           font: 10px 'DM Mono'
+                  }
+
+                  .facility-info span {
+                           display: block;
+                           color: #8396ad;
+                           font: 9px 'DM Mono';
+                           margin-top: 3px
+                  }
+
+                  .distance {
+                           color: var(--cyan);
+                           font: 9px 'DM Mono'
+                  }
+
+                  .connectivity {
+                           padding: 19px 20px
+                  }
+
+                  .connectivity h3 {
+                           margin: 8px 0 14px;
+                           font-size: 15px
+                  }
+
+                  .connect-grid {
+                           display: grid;
+                           grid-template-columns: 1fr 1fr;
+                           gap: 8px
+                  }
+
+                  .connect {
+                           padding: 12px 10px;
+                           border: 1px solid #d00303;
+                           border-radius: 12px;
+                           background: #ffffff05;
+                           cursor: pointer;
+                           transition: .2s
+                  }
+
+                  .connect:hover,
+                  .connect.selected {
+                           border-color: var(--cyan);
+                           background: #65eaff0d;
+                           box-shadow: 0 0 18px #65eaff14
+                  }
+
+                  .connect b {
+                           display: block;
+                           color: #cbdced;
+                           font: 10px 'DM Mono';
+                           margin-bottom: 4px
+                  }
+
+                  .connect span {
+                           color: var(--muted);
+                           font: 9px 'DM Mono'
+                  }
+
+                  .relay-status {
+                           margin-top: 12px;
+                           padding: 12px;
+                           border-left: 2px solid var(--cyan);
+                           background: #65eaff08;
+                           color: #a8bed5;
+                           font: 10px 'DM Mono';
+                           line-height: 1.5
+                  }
+
+                  .relay-status strong {
+                           display: block;
+                           color: var(--cyan);
+                           margin-bottom: 4px
+                  }
+
+                  .message-panel {
+                           margin-top: 18px;
+                           padding: 20px;
+                           display: grid;
+                           grid-template-columns: 1fr 1fr;
+                           gap: 18px
+                  }
+
+                  .message-panel h2 {
+                           font-size: 18px;
+                           margin: 8px 0 15px
+                  }
+
+                  .message-panel p {
+                           color: #9fb1c8;
+                           font-size: 12px;
+                           line-height: 1.6
+                  }
+
+                  .form {
+                           display: grid;
+                           gap: 9px
+                  }
+
+                  .input,
+                  .textarea,
+                  .select {
+                           width: 100%;
+                           border: 1px solid var(--line);
+                           background: #071526e8;
+                           color: var(--text);
+                           border-radius: 11px;
+                           padding: 11px 12px;
+                           font: 10px 'DM Mono';
+                           outline: 0
+                  }
+
+                  .textarea {
+                           min-height: 98px;
+                           resize: vertical
+                  }
+
+                  .input:focus,
+                  .textarea:focus,
+                  .select:focus {
+                           border-color: var(--cyan);
+                           box-shadow: 0 0 0 3px #65eaff14
+                  }
+
+                  .action-row {
+                           display: flex;
+                           gap: 8px;
+                           margin-top: 3px
+                  }
+
+                  .action-row .button {
+                           flex: 1
+                  }
+
+                  .queue {
+                           border-left: 1px solid var(--line);
+                           padding-left: 18px
+                  }
+
+                  .queue-title {
+                           display: flex;
+                           justify-content: space-between;
+                           align-items: center
+                  }
+
+                  .queue-title strong {
+                           font-size: 15px
+                  }
+
+                  .queue-title span {
+                           color: var(--muted);
+                           font: 9px 'DM Mono'
+                  }
+
+                  .queue-list {
+                           margin-top: 15px;
+                           max-height: 205px;
+                           overflow: auto
+                  }
+
+                  .queue-item {
+                           padding: 11px;
+                           border: 1px solid #ff0d0d;
+                           border-radius: 11px;
+                           background: #ffffff04;
+                           margin-bottom: 8px
+                  }
+
+                  .queue-item b {
+                           display: block;
+                           font: 10px 'DM Mono';
+                           color: #dce9f6
+                  }
+
+                  .queue-item span {
+                           display: block;
+                           color: #8799b1;
+                           font: 9px 'DM Mono';
+                           margin-top: 5px
+                  }
+
+                  .state {
+                           float: right;
+                           color: var(--amber)
+                  }
+
+                  .footer {
+                           display: flex;
+                           justify-content: space-between;
+                           padding: 30px 0 65px;
+                           color: #71839b;
+                           font: 10px 'DM Mono';
+                           letter-spacing: .05em
+                  }
+
+                  .notice {
+                           color: var(--amber);
+                           font: 9px 'DM Mono';
+                           line-height: 1.5;
+                           margin-top: 12px
+                  }
+
+                  .toast {
+                           position: fixed;
+                           right: 22px;
+                           bottom: 22px;
+                           padding: 14px 17px;
+                           background: #091b2eee;
+                           border: 1px solid #65eaff88;
+                           color: var(--cyan);
+                           border-radius: 12px;
+                           box-shadow: 0 18px 48px #000b;
+                           opacity: 0;
+                           transform: translateY(12px);
+                           transition: .3s;
+                           font: 10px 'DM Mono';
+                           z-index: 20
+                  }
+
+                  .toast.show {
+                           opacity: 1;
+                           transform: none
+                  }
+
+                  @media(max-width:1100px) {
+                           .dashboard {
+                                    grid-template-columns: 1fr
+                           }
+
+                           .side {
+                                    display: grid;
+                                    grid-template-columns: 1fr 1fr
+                           }
+
+                           .connectivity {
+                                    grid-column: span 2
+                           }
+
+                           .map-panel {
+                                    height: 620px
+                           }
+
+                           #map {
+                                    min-height: 520px
+                           }
+                  }
+
+                  @media(max-width:700px) {
+                           .shell {
+                                    width: calc(100% - 24px)
+                           }
+
+                           .topbar {
+                                    height: 64px
+                           }
+
+                           .brand {
+                                    font-size: 10px
+                           }
+
+                           .system {
+                                    font-size: 8px
+                           }
+
+                           .hero {
+                                    display: block;
+                                    padding-top: 42px
+                           }
+
+                           .hero h1 {
+                                    font-size: 52px
+                           }
+
+                           .mode-pill {
+                                    display: inline-block;
+                                    margin-top: 22px
+                           }
+
+                           .side {
+                                    display: flex
+                           }
+
+                           .map-panel {
+                                    height: 520px;
+                                    padding: 8px
+                           }
+
+                           .map-head {
+                                    height: auto;
+                                    flex-direction: column;
+                                    align-items: stretch;
+                                    gap: 8px;
+                                    padding-bottom: 8px
+                           }
+
+                           .map-controls {
+                                    justify-content: space-between
+                           }
+
+                           .search {
+                                    width: 100%
+                           }
+
+                           #map {
+                                    height: calc(100% - 82px);
+                                    min-height: 390px
+                           }
+
+                           .message-panel {
+                                    grid-template-columns: 1fr
+                           }
+
+                           .queue {
+                                    border-left: 0;
+                                    border-top: 1px solid var(--line);
+                                    padding: 18px 0 0
+                           }
+
+                           .footer {
+                                    flex-direction: column;
+                                    gap: 12px
+                           }
+                  }
+         </style>
+</head>
+
+<body>
+         <div class="shell">
+                  <header class="topbar">
+                           <div class="brand"><span class="brand-icon"></span>AETHER-X / RESPONSE RELAY</div>
+                           <div class="system"><span class="dot"></span><span id="system-label">RESPONSE NETWORK
+                                             READY</span><span id="clock">00:00:00 UTC</span></div>
+                  </header>
+                  <section class="hero">
+                           <div>
+                                    <div class="eyebrow">Emergency coordination / field console </div>
+                                    <h1>Move from emergency<br>to <em>response.</em></h1>
+                                    <p class="lede">Locate mapped shelters and emergency facilities, compose a
+                                             high-priority request, and route it through the strongest available
+                                             connectivity. Every delivery state is explicit: sent, queued,
+                                             relay-required, or awaiting acknowledgement.</p>
+                           </div>
+                           <div class="mode-pill"><span class="dot"></span> FIELD MODE / <span id="net-state">CHECKING
+                                             NETWORK</span></div>
+                  </section>
+                  <section class="dashboard">
+                           <article class="panel map-panel">
+                                    <div class="map-head">
+                                             <div>
+                                                      <div class="eyebrow">01 / Response map</div><strong
+                                                               id="map-title">Select a location to load nearby
+                                                               facilities</strong>
+                                             </div>
+                                             <div class="map-controls"><button class="button" id="locate">Use my
+                                                               location</button><button class="button"
+                                                               id="refresh">Refresh facilities</button><input
+                                                               class="search" id="search"
+                                                               placeholder="Search city or place…"></div>
+                                    </div>
+                                    <div id="map"></div>
+                           </article>
+                           <aside class="side">
+                                    <section class="panel side-section">
+                                             <div class="side-head">
+                                                      <div>
+                                                               <div class="eyebrow">02 / Operational picture</div>
+                                                               <h2>Nearest response points</h2>
+                                                      </div><span class="tiny" id="updated">NOT LOADED</span>
+                                             </div>
+                                             <div class="stats" style="margin-top:16px">
+                                                      <div class="stat"><span>Shelters</span><strong
+                                                                        id="shelters">—</strong><small>mapped
+                                                                        nearby</small></div>
+                                                      <div class="stat"><span>Response teams</span><strong
+                                                                        id="teams">—</strong><small>fire / police /
+                                                                        ambulance</small></div>
+                                                      <div class="stat"><span>Hospitals</span><strong
+                                                                        id="hospitals">—</strong><small>mapped
+                                                                        nearby</small></div>
+                                                      <div class="stat"><span>Search radius</span><strong>25
+                                                                        km</strong><small>Overpass query</small></div>
+                                             </div>
+                                             <div class="location-box" id="location-box" style="margin-top:15px">
+                                                      <b>Awaiting incident location</b>Use geolocation or search for a
+                                                      place. Facility operational status is not available from
+                                                      OpenStreetMap and must be verified by the incident commander.
+                                             </div>
+                                    </section>
+                                    <section class="panel side-section">
+                                             <div class="side-head">
+                                                      <div>
+                                                               <div class="eyebrow">03 / Facility network</div>
+                                                               <h2>Nearest mapped sites</h2>
+                                                      </div><span class="tiny">REAL OSM DATA</span>
+                                             </div>
+                                             <div class="facility-list" id="facility-list">
+                                                      <div class="facility"><i class="facility-icon"
+                                                                        style="--fc:var(--cyan)"></i>
+                                                               <div class="facility-info"><b>Waiting for
+                                                                                 location</b><span>No facilities
+                                                                                 loaded</span></div>
+                                                      </div>
+                                             </div>
+                                             <div class="notice">Mapped location does not mean currently staffed, open,
+                                                      reachable, or operational. Confirm status by radio or official
+                                                      dispatch.</div>
+                                    </section>
+                                    <section class="panel connectivity">
+                                             <div class="eyebrow">04 / Routing channel</div>
+                                             <h3>Choose available connectivity</h3>
+                                             <div class="connect-grid">
+                                                      <div class="connect selected" data-mode="online">
+                                                               <b>ONLINE</b><span>HTTPS gateway</span></div>
+                                                      <div class="connect" data-mode="mesh"><b>LOCAL
+                                                                        MESH</b><span>queued / nearby peers</span></div>
+                                                      <div class="connect" data-mode="radio"><b>RADIO</b><span>operator
+                                                                        relay required</span></div>
+                                                      <div class="connect" data-mode="satellite">
+                                                               <b>SATELLITE</b><span>terminal required</span></div>
+                                             </div>
+                                             <div class="relay-status" id="relay-status"><strong>ONLINE CHANNEL
+                                                               SELECTED</strong>Connectivity is available in this
+                                                      browser. No rescue-agency gateway is configured, so a message will
+                                                      be queued locally rather than falsely marked as delivered.</div>
+                                    </section>
+                           </aside>
+                  </section>
+                  <section class="panel message-panel">
+                           <div>
+                                    <div class="eyebrow">05 / Immediate response request</div>
+                                    <h2>Compose a verified field message</h2>
+                                    <p>Use this form to create a structured request. The panel stores the request
+                                             locally and shows the actual delivery state. It cannot contact rescue
+                                             agencies until an approved gateway endpoint or radio/satellite bridge is
+                                             configured.</p>
+                                    <div class="form"><input class="input" id="reporter"
+                                                      placeholder="Reporter / team identifier"><select class="select"
+                                                      id="priority">
+                                                      <option value="critical">CRITICAL — life safety</option>
+                                                      <option value="high">HIGH — urgent assistance</option>
+                                                      <option value="routine">ROUTINE — situational report</option>
+                                             </select><textarea class="textarea" id="message"
+                                                      placeholder="Describe what happened, people affected, access constraints, and resources required…"></textarea>
+                                             <div class="action-row"><button class="button primary" id="send">Transmit
+                                                               response request</button><button class="button"
+                                                               id="clear">Clear</button></div>
+                                    </div>
+                           </div>
+                           <div class="queue">
+                                    <div class="queue-title"><strong>Transmission ledger</strong><span
+                                                      id="queue-count">0 REQUESTS</span></div>
+                                    <div class="queue-list" id="queue-list">
+                                             <div class="queue-item"><b>No requests yet</b><span>New transmissions will
+                                                               appear here with timestamp, channel, and delivery
+                                                               state.</span></div>
+                                    </div>
+                           </div>
+                  </section>
+                  <footer class="footer"><span>AETHER-X OBSERVATORY © 2026</span><span>Real OpenStreetMap facilities /
+                                    local delivery ledger</span><span>For coordination support, a commitment to the
+                                    official emergency dispatch.</span></footer>
+         </div>
+         <div class="toast" id="toast"></div>
+         <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+         <script>
+                  (() => { 'use strict'; const $ = s => document.querySelector(s), map = L.map('map', { zoomControl: false }).setView([20, 0], 2); L.control.zoom({ position: 'bottomright' }).addTo(map); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18, attribution: '© OpenStreetMap contributors' }).addTo(map); const colors = { shelter: '#65eaff', hospital: '#ff687e', fire: '#ffc66e', police: '#a18dff', ambulance: '#5aaeff' }; let facilityMarkers = [], incidentMarker = null, selectedMode = 'online', currentLocation = null, facilities = []; const esc = s => String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c])); function toast(t) { let n = $('#toast'); n.textContent = t; n.classList.add('show'); clearTimeout(n.t); n.timer = setTimeout(() => n.classList.remove('show'), 2400) } function icon(type) { return L.divIcon({ className: '', html: `<div class="marker" style="--c:${colors[type] || colors.shelter};--halo:${colors[type] || colors.shelter}55"></div>`, iconSize: [19, 19], iconAnchor: [9, 9] }) } function setLocation(lat, lon, label) { currentLocation = { lat, lon, label }; if (incidentMarker) map.removeLayer(incidentMarker); incidentMarker = L.marker([lat, lon], { icon: L.divIcon({ className: '', html: '<div class="location-ring"></div>', iconSize: [23, 23], iconAnchor: [11, 11] }) }).addTo(map).bindPopup(`<strong>Incident focus</strong><br>${esc(label)}`).openPopup(); map.setView([lat, lon], 11); $('#map-title').textContent = 'Response map / ' + label; $('#location-box').innerHTML = `<b>${esc(label)}</b>${lat.toFixed(4)}, ${lon.toFixed(4)} · Loading mapped facilities within 25 km…`; loadFacilities(lat, lon, label) } function nearest(lat, lon, a, b) { return Math.sqrt((lat - a) ** 2 + (lon - b) ** 2) * 111 } function loadFacility(feature) { let p = feature.tags || {}, lat = feature.lat ?? feature.center?.lat, lon = feature.lon ?? feature.center?.lon; if (lat == null || lon == null) return; let type = p.amenity === 'shelter' || p.emergency === 'social_facility' ? 'shelter' : p.amenity === 'hospital' ? 'hospital' : p.amenity === 'fire_station' ? 'fire' : p.amenity === 'police' ? 'police' : p.amenity === 'ambulance_station' ? 'ambulance' : null; if (!type) return; let name = p.name || ({ shelter: 'Mapped shelter', hospital: 'Mapped hospital', fire: 'Fire station', police: 'Police station', ambulance: 'Ambulance station' }[type]); let f = { type, lat, lon, name, tags: p }; facilities.push(f); let m = L.marker([lat, lon], { icon: icon(type) }).addTo(map); m.bindPopup(`<strong>${esc(name)}</strong><br>${type.toUpperCase()} · mapped OSM facility<br><a href="https://www.openstreetmap.org/?mlat=${lat}&mlon=${lon}#map=18/${lat}/${lon}" target="_blank" rel="noopener">Open map record ↗</a>`); m.on('click', () => selectFacility(f)); facilityMarkers.push(m) } function selectFacility(f) { let d = nearest(currentLocation.lat, currentLocation.lon, f.lat, f.lon); $('#location-box').innerHTML = `<b>${esc(f.name)}</b>${f.type.toUpperCase()} · approximately ${d.toFixed(1)} km from incident focus. Operational state is unverified; contact official dispatch before relying on it.` } function renderList() { let sorted = facilities.map(f => ({ ...f, d: nearest(currentLocation.lat, currentLocation.lon, f.lat, f.lon) })).sort((a, b) => a.d - b.d).slice(0, 7); $('#facility-list').innerHTML = sorted.length ? sorted.map(f => `<div class="facility" data-lat="${f.lat}" data-lon="${f.lon}"><i class="facility-icon" style="--fc:${colors[f.type]}"></i><div class="facility-info"><b>${esc(f.name)}</b><span>${f.type.toUpperCase()} · mapped location</span></div><span class="distance">${f.d.toFixed(1)} km</span></div>`).join('') : '<div class="facility"><div class="facility-info"><b>No mapped facilities returned</b><span>Try a wider or different location.</span></div></div>'; document.querySelectorAll('.facility[data-lat]').forEach(el => el.onclick = () => map.setView([+el.dataset.lat, +el.dataset.lon], 15)) } async function loadFacilities(lat, lon, label) { facilityMarkers.forEach(m => map.removeLayer(m)); facilityMarkers = []; facilities = []; let q = `[out:json][timeout:25];(nwr(around:25000,${lat},${lon})[amenity=shelter];nwr(around:25000,${lat},${lon})[emergency=social_facility];nwr(around:25000,${lat},${lon})[amenity=hospital];nwr(around:25000,${lat},${lon})[amenity=fire_station];nwr(around:25000,${lat},${lon})[amenity=police];nwr(around:25000,${lat},${lon})[amenity=ambulance_station];);out center tags;`; try { let endpoints = ['https://overpass-api.de/api/interpreter', 'https://overpass.kumi.systems/api/interpreter']; let r = null; for (const endpoint of endpoints) { try { let candidate = await fetch(endpoint, { method: 'POST', body: q }); if (candidate.ok) { r = candidate; break } } catch (error) { } } if (!r) throw new Error('All public Overpass endpoints unavailable'); let data = await r.json(); data.elements.forEach(loadFacility); let counts = { shelter: 0, hospital: 0, fire: 0, police: 0, ambulance: 0 }; facilities.forEach(f => counts[f.type]++); $('#shelters').textContent = counts.shelter; $('#teams').textContent = counts.fire + counts.police + counts.ambulance; $('#hospitals').textContent = counts.hospital; $('#updated').textContent = new Date().toISOString().slice(11, 19) + ' UTC'; $('#location-box').innerHTML = `<b>${esc(label)}</b>${facilities.length} mapped facilities returned within 25 km. Operational status is not verified by this map.`; renderList(); toast('REAL FACILITY DATA LOADED') } catch (e) { $('#location-box').innerHTML = '<b>Facility query unavailable</b>Overpass did not respond. Try again or use official dispatch data.'; toast('FACILITY FEED UNAVAILABLE'); console.error(e) } } function useLocation() { if (!navigator.geolocation) return toast('GEOLOCATION NOT AVAILABLE'); navigator.geolocation.getCurrentPosition(p => setLocation(p.coords.latitude, p.coords.longitude, 'Current device location'), () => toast('LOCATION PERMISSION NOT GRANTED'), { enableHighAccuracy: true, timeout: 10000 }) } function search(q) { fetch('https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&q=' + encodeURIComponent(q), { headers: { Accept: 'application/json' } }).then(r => r.json()).then(a => a[0] ? setLocation(+a[0].lat, +a[0].lon, a[0].display_name.split(',').slice(0, 2).join(',')) : toast('PLACE NOT FOUND')).catch(() => toast('SEARCH UNAVAILABLE')) } function modeText(mode) { return { online: ['ONLINE CHANNEL SELECTED', 'Connectivity is available in this browser. No rescue-agency gateway is configured, so the request will be queued locally rather than falsely marked as delivered.'], mesh: ['LOCAL MESH SELECTED', 'This browser can queue and broadcast locally only when a compatible mesh or local relay is present. Rescue-team delivery is not confirmed.'], radio: ['RADIO RELAY SELECTED', 'A radio operator or configured hardware gateway is required. The request will be prepared for manual relay and remain unacknowledged.'], satellite: ['SATELLITE RELAY SELECTED', 'A satellite terminal and approved service are required. The request will be queued for transmission, not marked as sent.'] }[mode] } document.querySelectorAll('.connect').forEach(el => el.onclick = () => { selectedMode = el.dataset.mode; document.querySelectorAll('.connect').forEach(x => x.classList.toggle('selected', x === el)); let t = modeText(selectedMode); $('#relay-status').innerHTML = `<strong>${t[0]}</strong>${t[1]}`; $('#net-state').textContent = selectedMode.toUpperCase() + ' READY' }); function ledger() { let q = JSON.parse(localStorage.getItem('aether-response-ledger') || '[]'); $('#queue-count').textContent = q.length + ' REQUESTS'; $('#queue-list').innerHTML = q.length ? q.slice().reverse().map(x => `<div class="queue-item"><span class="state">${x.state}</span><b>${x.priority.toUpperCase()} · ${x.channel.toUpperCase()}</b><span>${x.time} · ${esc(x.message.slice(0, 90))}</span></div>`).join('') : '<div class="queue-item"><b>No requests yet</b><span>New transmissions will appear here with timestamp, channel, and delivery state.</span></div>' } function send() { let msg = $('#message').value.trim(), reporter = $('#reporter').value.trim() || 'Unidentified field device'; if (!msg) return toast('ADD A RESPONSE MESSAGE FIRST'); let state = selectedMode === 'online' ? 'QUEUED — NO GATEWAY' : selectedMode === 'mesh' ? 'QUEUED — LOCAL RELAY' : selectedMode === 'radio' ? 'READY — RADIO HANDOFF' : 'QUEUED — SATELLITE'; let q = JSON.parse(localStorage.getItem('aether-response-ledger') || '[]'); q.push({ id: 'REQ-' + Date.now(), priority: $('#priority').value, channel: selectedMode, reporter, message: msg, state, time: new Date().toISOString().slice(0, 19).replace('T', ' ') + ' UTC', location: currentLocation }); localStorage.setItem('aether-response-ledger', JSON.stringify(q.slice(-25))); ledger(); toast(state); $('#message').value = '' } $('#locate').onclick = useLocation; $('#refresh').onclick = () => currentLocation ? loadFacilities(currentLocation.lat, currentLocation.lon, currentLocation.label) : toast('SELECT A LOCATION FIRST'); $('#search').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.value.trim()) search(e.target.value.trim()) }); $('#send').onclick = send; $('#clear').onclick = () => { $('#reporter').value = ''; $('#message').value = '' }; window.addEventListener('online', () => { $('#net-state').textContent = 'ONLINE'; $('#system-label').textContent = 'RESPONSE NETWORK READY' }); window.addEventListener('offline', () => { $('#net-state').textContent = 'OFFLINE / RELAY MODE'; $('#system-label').textContent = 'OFFLINE-FIRST MODE' }); document.addEventListener('mousemove', e => { document.documentElement.style.setProperty('--mx', e.clientX + 'px'); document.documentElement.style.setProperty('--my', e.clientY + 'px') }); setInterval(() => $('#clock').textContent = new Date().toISOString().slice(11, 19) + ' UTC', 1000); $('#net-state').textContent = navigator.onLine ? 'ONLINE' : 'OFFLINE / RELAY MODE'; ledger() })();
+         </script>
+</body>
+
+</html>
