@@ -54,8 +54,8 @@
     container.style.touchAction = 'none';
 
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(42, 1, 0.1, 2000);
-    camera.position.set(0, 0, 205);
+    camera = new THREE.PerspectiveCamera(46, 1, 0.1, 2500);
+    camera.position.set(0, 0, 245);
 
     renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -302,39 +302,268 @@
     });
   }
 
+  /* --------------------------------------------------------------------------
+     PHOTOREALISTIC 3D ORBITAL SATELLITE SPACECRAFT SYSTEM
+     -------------------------------------------------------------------------- */
+
+  function buildRealisticSatelliteMesh(options = {}) {
+    const satellite = new THREE.Group();
+    satellite.name = options.name || 'AETHER Sentinel Spacecraft';
+
+    // Materials
+    const goldFoilMat = new THREE.MeshPhongMaterial({
+      color: 0xdeb841,
+      emissive: 0x221703,
+      specular: 0xfff5b8,
+      shininess: 90
+    });
+
+    const titaniumMat = new THREE.MeshPhongMaterial({
+      color: 0x475569,
+      specular: 0x94a3b8,
+      shininess: 60
+    });
+
+    const solarCellMat = new THREE.MeshPhongMaterial({
+      color: 0x071e3d,
+      emissive: 0x020d1c,
+      specular: 0x00f0ff,
+      shininess: 95
+    });
+
+    const dishMat = new THREE.MeshPhongMaterial({
+      color: 0xf1f5f9,
+      specular: 0xffffff,
+      shininess: 80,
+      side: THREE.DoubleSide
+    });
+
+    // 1. Central Avionics Bus (Gold MLI Thermal Foil Chassis)
+    const busGeo = new THREE.BoxGeometry(2.8, 1.8, 1.8);
+    const busMesh = new THREE.Mesh(busGeo, goldFoilMat);
+    satellite.add(busMesh);
+
+    // Radiator thermal plates (Top & Bottom caps)
+    const topCap = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.22, 1.9), titaniumMat);
+    topCap.position.y = 0.95;
+    const botCap = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.22, 1.9), titaniumMat);
+    botCap.position.y = -0.95;
+    satellite.add(topCap, botCap);
+
+    // 2. Optical Earth Observation Sensor (Nadir Camera Tube - facing -Z towards Earth)
+    const lensTubeGeo = new THREE.CylinderGeometry(0.45, 0.35, 0.75, 24);
+    const lensMat = new THREE.MeshPhongMaterial({
+      color: 0x00f0ff,
+      emissive: 0x005577,
+      specular: 0xffffff,
+      shininess: 100
+    });
+    const lensTube = new THREE.Mesh(lensTubeGeo, lensMat);
+    lensTube.rotation.x = Math.PI / 2;
+    lensTube.position.set(0, 0, 1.05);
+    satellite.add(lensTube);
+
+    // Star Tracker navigation miniature telescopes (Zenith side)
+    const starTracker1 = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.5, 12), titaniumMat);
+    starTracker1.rotation.x = -Math.PI / 3;
+    starTracker1.position.set(0.55, 0.9, -0.5);
+    const starTracker2 = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.5, 12), titaniumMat);
+    starTracker2.rotation.x = -Math.PI / 3;
+    starTracker2.position.set(-0.55, 0.9, -0.5);
+    satellite.add(starTracker1, starTracker2);
+
+    // 3. High-Gain Parabolic Communications Dish
+    const dishGroup = new THREE.Group();
+    const dishGeo = new THREE.CylinderGeometry(1.3, 0.18, 0.45, 24, 1, true);
+    const dishMesh = new THREE.Mesh(dishGeo, dishMat);
+    dishMesh.rotation.x = Math.PI / 2;
+
+    // Antenna feed horn mast & sub-reflector probe
+    const feedMast = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.95, 8), titaniumMat);
+    feedMast.rotation.x = Math.PI / 2;
+    feedMast.position.z = 0.4;
+
+    const subReflector = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 12), titaniumMat);
+    subReflector.position.z = 0.85;
+
+    dishGroup.add(dishMesh, feedMast, subReflector);
+    dishGroup.position.set(0, -0.95, 0.5);
+    dishGroup.rotation.x = Math.PI / 5;
+    satellite.add(dishGroup);
+
+    // 4. Dual Articulated Photovoltaic Solar Array Wings
+    const solarWingLeft = new THREE.Group();
+    const solarWingRight = new THREE.Group();
+
+    // Left Wing (3 segmented solar panels with gold truss boom)
+    const boomLeft = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.4, 8), goldFoilMat);
+    boomLeft.rotation.z = Math.PI / 2;
+    boomLeft.position.x = -1.2;
+
+    const panelLeftGeo = new THREE.BoxGeometry(4.8, 1.6, 0.08);
+    const panelLeft = new THREE.Mesh(panelLeftGeo, solarCellMat);
+    panelLeft.position.x = -4.2;
+
+    // Left Wingtip Red Nav Strobe LED
+    const navLedLeft = new THREE.Mesh(
+      new THREE.SphereGeometry(0.14, 12, 12),
+      new THREE.MeshBasicMaterial({ color: 0xff3b30 })
+    );
+    navLedLeft.position.set(-6.8, 0.7, 0);
+
+    solarWingLeft.add(boomLeft, panelLeft, navLedLeft);
+
+    // Right Wing (3 segmented solar panels with gold truss boom)
+    const boomRight = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.4, 8), goldFoilMat);
+    boomRight.rotation.z = Math.PI / 2;
+    boomRight.position.x = 1.2;
+
+    const panelRightGeo = new THREE.BoxGeometry(4.8, 1.6, 0.08);
+    const panelRight = new THREE.Mesh(panelRightGeo, solarCellMat);
+    panelRight.position.x = 4.2;
+
+    // Right Wingtip Cyan Nav Strobe LED
+    const navLedRight = new THREE.Mesh(
+      new THREE.SphereGeometry(0.14, 12, 12),
+      new THREE.MeshBasicMaterial({ color: 0x00f0ff })
+    );
+    navLedRight.position.set(6.8, 0.7, 0);
+
+    solarWingRight.add(boomRight, panelRight, navLedRight);
+
+    satellite.add(solarWingLeft, solarWingRight);
+
+    // 5. Xenon Ion Propulsion Engine (Rear Thruster Bell & Ion Glow)
+    const thrusterBell = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.28, 0.6, 0.55, 16),
+      titaniumMat
+    );
+    thrusterBell.rotation.x = Math.PI / 2;
+    thrusterBell.position.set(0, 0, -1.05);
+
+    const ionConeMat = new THREE.MeshBasicMaterial({
+      color: 0x00f0ff,
+      transparent: true,
+      opacity: 0.75,
+      blending: THREE.AdditiveBlending
+    });
+    const ionPlume = new THREE.Mesh(new THREE.ConeGeometry(0.45, 1.4, 16), ionConeMat);
+    ionPlume.rotation.x = -Math.PI / 2;
+    ionPlume.position.set(0, 0, -1.9);
+    satellite.add(thrusterBell, ionPlume);
+
+    // 6. Ground-Scanning Conical Telemetry Radar Beam (Nadir pointing toward Earth)
+    const radarBeamMat = new THREE.MeshBasicMaterial({
+      color: 0x00f0ff,
+      transparent: true,
+      opacity: 0.14,
+      side: THREE.DoubleSide,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+    // Length extends cleanly to Earth's orbital altitude
+    const radarBeamGeo = new THREE.ConeGeometry(4.6, 17, 32, 1, true);
+    const radarBeam = new THREE.Mesh(radarBeamGeo, radarBeamMat);
+    radarBeam.rotation.x = Math.PI / 2;
+    radarBeam.position.set(0, 0, 9.5);
+    satellite.add(radarBeam);
+
+    // Atmospheric Ground-Track Footprint Spot Ring
+    const footprintRing = new THREE.Mesh(
+      new THREE.RingGeometry(3.6, 4.4, 36),
+      new THREE.MeshBasicMaterial({
+        color: 0x00f0ff,
+        transparent: true,
+        opacity: 0.45,
+        side: THREE.DoubleSide,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending
+      })
+    );
+    footprintRing.position.set(0, 0, 17.5);
+    satellite.add(footprintRing);
+
+    return {
+      group: satellite,
+      solarWings: [solarWingLeft, solarWingRight],
+      navLeds: [navLedLeft, navLedRight],
+      ionPlume,
+      radarBeam,
+      footprintRing
+    };
+  }
+
+  function createOrbitTrajectoryRibbon(radius, inclination, colorHex) {
+    const points = [];
+    const segments = 128;
+    for (let i = 0; i <= segments; i++) {
+      const theta = (i / segments) * Math.PI * 2;
+      const x = Math.cos(theta) * radius;
+      const y = Math.sin(theta) * Math.sin(inclination) * radius;
+      const z = Math.sin(theta) * Math.cos(inclination) * radius;
+      points.push(new THREE.Vector3(x, y, z));
+    }
+
+    const orbitGeo = new THREE.BufferGeometry().setFromPoints(points);
+    const orbitMat = new THREE.LineBasicMaterial({
+      color: colorHex || 0x00f0ff,
+      transparent: true,
+      opacity: 0.32,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending
+    });
+
+    const orbitLine = new THREE.Line(orbitGeo, orbitMat);
+    orbitLine.name = 'Satellite Orbit Trajectory Path';
+    return orbitLine;
+  }
+
   function addSatelliteOrbits() {
     const orbitDefinitions = [
-      { radius: EARTH_RADIUS + 20, inclination: 0.5, speed: 0.11, color: 0x29dfff, phase: 0.5 },
-      { radius: EARTH_RADIUS + 26, inclination: -0.82, speed: 0.075, color: 0x63b9ff, phase: 3.4 }
+      {
+        name: 'AETHER Sentinel-6 Flagship Recon Orbiter',
+        radius: EARTH_RADIUS + 17,
+        inclination: 0.46,
+        speed: 0.13,
+        color: 0x00f0ff,
+        phase: 0.65,
+        isFlagship: true
+      },
+      {
+        name: 'AETHER Starlink Telemetry Relay-A',
+        radius: EARTH_RADIUS + 23,
+        inclination: -0.52,
+        speed: 0.09,
+        color: 0x38bdf8,
+        phase: 3.4,
+        isFlagship: false
+      }
     ];
 
     orbitDefinitions.forEach((definition) => {
-      const satellite = new THREE.Group();
-      const trail = new THREE.Mesh(
-        new THREE.SphereGeometry(1.18, 12, 12),
-        new THREE.MeshBasicMaterial({ color: definition.color })
-      );
-      const glow = new THREE.Sprite(
-        new THREE.SpriteMaterial({
-          map: makeGlowTexture(definition.color),
-          color: definition.color,
-          transparent: true,
-          opacity: 0.85,
-          depthWrite: false,
-          blending: THREE.AdditiveBlending
-        })
-      );
-      glow.scale.set(8, 8, 1);
-      satellite.add(trail, glow);
-      rootGroup.add(satellite);
+      // 1. Add 3D Glowing Orbit Trajectory Ribbon
+      const orbitPath = createOrbitTrajectoryRibbon(definition.radius, definition.inclination, definition.color);
+      rootGroup.add(orbitPath);
+
+      // 2. Build 3D Realistic Spacecraft
+      const spacecraft = buildRealisticSatelliteMesh({ name: definition.name });
+      
+      // Secondary satellites are slightly more compact
+      if (!definition.isFlagship) {
+        spacecraft.group.scale.setScalar(0.72);
+        spacecraft.radarBeam.material.opacity = 0.08;
+      }
+
+      rootGroup.add(spacecraft.group);
 
       satelliteOrbits.push({
-        group: satellite,
+        spacecraft,
         radius: definition.radius,
         inclination: definition.inclination,
         speed: definition.speed,
         color: definition.color,
-        phase: definition.phase
+        phase: definition.phase,
+        isFlagship: definition.isFlagship
       });
     });
   }
@@ -427,6 +656,11 @@
       const width = Math.max(container.clientWidth, 1);
       const height = Math.max(container.clientHeight, 1);
       camera.aspect = width / height;
+      if (camera.aspect < 1.0) {
+        camera.fov = 46 + (1.0 - camera.aspect) * 16;
+      } else {
+        camera.fov = 46;
+      }
       camera.updateProjectionMatrix();
       renderer.setSize(width, height, false);
     };
@@ -459,13 +693,52 @@
       pulse.halo.scale.setScalar(8 + cycle * 6);
     });
 
+    // Animate Realistic 3D Satellites & Spacecraft Telemetry
     satelliteOrbits.forEach((orbit) => {
       const angle = elapsedSeconds * orbit.speed + orbit.phase;
-      orbit.group.position.set(
-        Math.cos(angle) * orbit.radius,
-        Math.sin(angle) * Math.sin(orbit.inclination) * orbit.radius,
-        Math.sin(angle) * Math.cos(orbit.inclination) * orbit.radius
-      );
+      const x = Math.cos(angle) * orbit.radius;
+      const y = Math.sin(angle) * Math.sin(orbit.inclination) * orbit.radius;
+      const z = Math.sin(angle) * Math.cos(orbit.inclination) * orbit.radius;
+
+      const sc = orbit.spacecraft;
+      if (!sc || !sc.group) return;
+
+      // 1. Orbital position
+      sc.group.position.set(x, y, z);
+
+      // 2. True Nadir Alignment (Point satellite observation optics & dish directly at Earth)
+      sc.group.lookAt(0, 0, 0);
+
+      // 3. Solar Panel Articulation (Slowly pitch arrays to track sunlight)
+      if (sc.solarWings) {
+        const solarPitch = Math.sin(elapsedSeconds * 0.45 + orbit.phase) * 0.38;
+        sc.solarWings.forEach((wing) => {
+          wing.rotation.x = solarPitch;
+        });
+      }
+
+      // 4. Ion Engine Plasma Propulsion Pulse
+      if (sc.ionPlume) {
+        const plumeFlicker = 1.0 + Math.sin(elapsedSeconds * 9.5 + orbit.phase) * 0.18;
+        sc.ionPlume.scale.set(plumeFlicker, plumeFlicker * 1.15, 1);
+        sc.ionPlume.material.opacity = 0.65 + Math.sin(elapsedSeconds * 8) * 0.25;
+      }
+
+      // 5. Wingtip Aviation Navigation Strobe Lights (0.8 Hz dual flash pattern)
+      if (sc.navLeds) {
+        const strobeTime = (elapsedSeconds * 1.4 + orbit.phase) % 1.0;
+        const isStrobe = strobeTime < 0.12 || (strobeTime > 0.22 && strobeTime < 0.34);
+        sc.navLeds.forEach((led) => {
+          led.visible = isStrobe;
+        });
+      }
+
+      // 6. Ground-Track Radar Scanner Footprint sweep
+      if (sc.footprintRing) {
+        const radarSweep = (Math.sin(elapsedSeconds * 2.8 + orbit.phase) + 1) * 0.5;
+        sc.footprintRing.scale.setScalar(1.0 + radarSweep * 0.22);
+        sc.footprintRing.material.opacity = 0.25 + (1 - radarSweep) * 0.45;
+      }
     });
 
     renderer.render(scene, camera);
