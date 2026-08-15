@@ -137,9 +137,32 @@
                   .system {
                            display: flex;
                            align-items: center;
-                           gap: 9px;
+                           gap: 12px;
                            color: var(--muted);
                            font: 10px 'DM Mono'
+                  }
+
+                  .nav-back-link {
+                           display: inline-flex;
+                           align-items: center;
+                           gap: 6px;
+                           padding: 6px 14px;
+                           border-radius: 8px;
+                           background: rgba(101, 234, 255, 0.08);
+                           border: 1px solid rgba(101, 234, 255, 0.35);
+                           color: var(--cyan);
+                           font: 500 10px 'DM Mono';
+                           letter-spacing: 0.08em;
+                           text-decoration: none;
+                           transition: all 0.2s ease;
+                           box-shadow: 0 0 12px rgba(101, 234, 255, 0.12);
+                  }
+
+                  .nav-back-link:hover {
+                           background: rgba(101, 234, 255, 0.2);
+                           border-color: var(--cyan);
+                           transform: translateX(-2px);
+                           box-shadow: 0 0 20px rgba(101, 234, 255, 0.3);
                   }
 
                   .dot {
@@ -796,8 +819,12 @@
          <div class="shell">
                   <header class="topbar">
                            <div class="brand"><span class="brand-icon"></span>AETHER-X / RESPONSE RELAY</div>
-                           <div class="system"><span class="dot"></span><span id="system-label">RESPONSE NETWORK
-                                             READY</span><span id="clock">00:00:00 UTC</span></div>
+                           <div class="system">
+                                    <a href="index.html" class="nav-back-link">← RETURN TO DASHBOARD</a>
+                                    <span style="display:flex; align-items:center; gap:6px;">
+                                             <span class="dot"></span><span id="system-label">RESPONSE NETWORK READY</span><span id="clock">00:00:00 UTC</span>
+                                    </span>
+                           </div>
                   </header>
                   <section class="hero">
                            <div>

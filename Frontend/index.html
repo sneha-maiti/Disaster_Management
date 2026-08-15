@@ -1166,6 +1166,47 @@
             </div>
             <button id="sos-dispatch-execute-btn" class="btn-execute-sos">((•)) EXECUTE SOS DISPATCH >></button>
           </div>
+
+          <!-- HIGH-TECH SHELTER NETWORK ACCESS BUTTON -->
+          <div class="border-t border-rose-500/15 pt-4 mt-1">
+            <a href="shelter_network.html" id="btn-goto-shelter-network"
+              class="relative block w-full py-3.5 px-5 rounded-xl overflow-hidden text-decoration-none cursor-pointer transition-all duration-300 group"
+              style="background: linear-gradient(135deg, rgba(6,16,34,0.95) 0%, rgba(14,36,28,0.85) 50%, rgba(6,16,34,0.95) 100%); border: 1px solid rgba(52,211,153,0.35); box-shadow: 0 4px 20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 25px rgba(52,211,153,0.1);"
+              onmouseover="this.style.borderColor='rgba(52,211,153,0.85)'; this.style.boxShadow='0 8px 35px rgba(52,211,153,0.3), 0 0 20px rgba(52,211,153,0.2), inset 0 0 25px rgba(52,211,153,0.08)'; this.style.transform='translateY(-2px)';"
+              onmouseout="this.style.borderColor='rgba(52,211,153,0.35)'; this.style.boxShadow='0 4px 20px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06), 0 0 25px rgba(52,211,153,0.1)'; this.style.transform='none';"
+              title="Access Emergency Shelter Network & Safe Zones">
+              <!-- Corner reticles -->
+              <span style="position:absolute;top:4px;left:4px;width:8px;height:8px;border-top:1.5px solid #34d399;border-left:1.5px solid #34d399;pointer-events:none;"></span>
+              <span style="position:absolute;top:4px;right:4px;width:8px;height:8px;border-top:1.5px solid #34d399;border-right:1.5px solid #34d399;pointer-events:none;"></span>
+              <span style="position:absolute;bottom:4px;left:4px;width:8px;height:8px;border-bottom:1.5px solid #34d399;border-left:1.5px solid #34d399;pointer-events:none;"></span>
+              <span style="position:absolute;bottom:4px;right:4px;width:8px;height:8px;border-bottom:1.5px solid #34d399;border-right:1.5px solid #34d399;pointer-events:none;"></span>
+              <!-- Scanline animation -->
+              <span style="position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(180deg,transparent 0%,rgba(52,211,153,0.06) 50%,transparent 100%);background-size:100% 8px;pointer-events:none;opacity:0.5;"></span>
+              <div class="flex items-center justify-between relative" style="z-index:2;">
+                <div class="flex items-center gap-3">
+                  <div style="width:36px;height:36px;border-radius:10px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.4);display:flex;align-items:center;justify-content:center;box-shadow:0 0 12px rgba(52,211,153,0.2);">
+                    <svg style="width:18px;height:18px;color:#34d399;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                  </div>
+                  <div>
+                    <div class="font-mono text-[9px] font-bold tracking-widest uppercase flex items-center gap-1.5" style="color:rgba(52,211,153,0.85);">
+                      <span style="width:5px;height:5px;border-radius:50%;background:#34d399;box-shadow:0 0 6px #34d399;display:inline-block;animation:pulse 2s infinite;"></span>
+                      <span>EMERGENCY SHELTER NETWORK</span>
+                    </div>
+                    <div class="font-mono text-xs font-bold text-white tracking-wider" style="margin-top:2px;">
+                      ACCESS SAFE ZONE MAP & SHELTER STATUS
+                    </div>
+                    <div class="font-mono text-[9px] text-slate-400" style="margin-top:1px;">Real-time shelter capacity · Routing corridors · Supply inventory</div>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="font-mono text-[9px] font-bold hidden md:inline-block" style="color:rgba(52,211,153,0.7);letter-spacing:0.1em;">LAUNCH</span>
+                  <span class="font-mono text-lg font-bold" style="color:#34d399;transition:transform 0.2s;">↗</span>
+                </div>
+              </div>
+            </a>
+          </div>
         </div>
       </div>
 
