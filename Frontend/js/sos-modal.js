@@ -81,7 +81,30 @@
     setupDragDrop();
   }
 
+  function isMemberLoggedIn() {
+    try {
+      const mem = sessionStorage.getItem('aetherx_member_login');
+      return !!mem && !!JSON.parse(mem)?.memberId;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function openModal() {
+    if (!isMemberLoggedIn()) {
+      if (typeof window.showStep2RequiredModal === 'function') {
+        window.showStep2RequiredModal('GLOBAL SOS COMMAND');
+      } else {
+        const modal = document.getElementById('modal-step2-required');
+        const tabNameEl = document.getElementById('modal-target-tab-name');
+        if (tabNameEl) tabNameEl.textContent = 'GLOBAL SOS COMMAND';
+        if (modal) {
+          modal.classList.remove('hidden');
+          modal.classList.add('flex');
+        }
+      }
+      return;
+    }
     const backdrop = document.getElementById('sos-modal-backdrop');
     if (!backdrop) return;
     backdrop.classList.add('active');
