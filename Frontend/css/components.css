@@ -591,6 +591,25 @@
   box-shadow: 0 8px 30px rgba(168, 85, 247, 0.35), 0 0 15px rgba(168, 85, 247, 0.25), inset 0 0 20px rgba(168, 85, 247, 0.12);
 }
 
+/* Emerald Glow Variation */
+.hightech-btn-emerald {
+  border-color: rgba(52, 211, 153, 0.35);
+}
+
+.hightech-btn-emerald:hover {
+  transform: translateY(-3px) scale(1.015);
+  border-color: rgba(52, 211, 153, 0.85);
+  background: linear-gradient(135deg, rgba(4, 28, 20, 0.95) 0%, rgba(8, 48, 34, 0.85) 100%);
+  box-shadow: 0 8px 30px rgba(52, 211, 153, 0.35), 0 0 15px rgba(52, 211, 153, 0.25), inset 0 0 20px rgba(52, 211, 153, 0.12);
+}
+
+.hightech-btn-emerald .hud-corner-tl,
+.hightech-btn-emerald .hud-corner-tr,
+.hightech-btn-emerald .hud-corner-bl,
+.hightech-btn-emerald .hud-corner-br {
+  border-color: #34d399;
+}
+
 .hightech-btn-content {
   position: relative;
   z-index: 2;

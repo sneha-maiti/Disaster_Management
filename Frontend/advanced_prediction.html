@@ -5,6 +5,24 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>AETHER // What-If Disaster Simulator</title>
+    <script>
+        (function () {
+            try {
+                const auth = sessionStorage.getItem('aetherx_auth');
+                const member = sessionStorage.getItem('aetherx_member_login');
+                if (!auth || !JSON.parse(auth)?.username) {
+                    window.location.replace('authentication.html');
+                    return;
+                }
+                if (!member || !JSON.parse(member)?.memberId) {
+                    window.location.replace('index.html');
+                    return;
+                }
+            } catch (e) {
+                window.location.replace('index.html');
+            }
+        })();
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 

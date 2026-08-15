@@ -3,15 +3,6 @@
    ========================================================================== */
 
 (function () {
-  function initMainController() {
-    setupAuthHeader();
-    setupStep2Modal();
-    startUtcClock();
-    startThreatCountdown();
-    setupTabNavigation();
-    setupLogoHome();
-    setupMobileMenu();
-  }
 
   function isStep1Auth() {
     try {
@@ -290,9 +281,34 @@
     } catch (e) {}
   }
 
+  function setupProtectedActionGuards() {
+    // 1. Guard all SOS trigger buttons
+    document.querySelectorAll('.trigger-sos-modal').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        if (!isMemberLoggedIn()) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          showStep2RequiredModal('GLOBAL SOS DISPATCH PROTOCOL');
+        }
+      }, true);
+    });
+
+    // 2. Guard all Advanced Prediction simulator links
+    document.querySelectorAll('a[href*="advanced_prediction.html"]').forEach(link => {
+      link.addEventListener('click', (e) => {
+        if (!isMemberLoggedIn()) {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          showStep2RequiredModal('ADVANCED PREDICTION ENGINE');
+        }
+      }, true);
+    });
+  }
+
   function initMainController() {
     setupAuthHeader();
     setupStep2Modal();
+    setupProtectedActionGuards();
     startUtcClock();
     startThreatCountdown();
     setupTabNavigation();
@@ -302,5 +318,7 @@
   }
 
   window.switchTab = switchTab;
+  window.showStep2RequiredModal = showStep2RequiredModal;
+  window.isMemberLoggedIn = isMemberLoggedIn;
   window.addEventListener('DOMContentLoaded', initMainController);
 })();
