@@ -212,7 +212,8 @@
   async function loadAndRenderBackendSosMarkers() {
     if (!map || !markersGroup) return;
     try {
-      const response = await fetch('/api/sos');
+      const apiBase = window.API_BASE || 'http://localhost:8000';
+      const response = await fetch(`${apiBase}/api/sos`);
       if (!response.ok) return;
       const result = await response.json();
       if (!result.success || !Array.isArray(result.data)) return;

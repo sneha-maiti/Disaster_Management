@@ -158,7 +158,8 @@
           }
 
           try {
-            const res = await fetch('/api/maps/reverse-geocode', {
+            const apiBase = window.API_BASE || 'http://localhost:8000';
+            const res = await fetch(`${apiBase}/api/maps/reverse-geocode`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ latitude: currentLat, longitude: currentLng })
@@ -218,9 +219,10 @@
 
   async function uploadImageToBackend(file) {
     try {
+      const apiBase = window.API_BASE || 'http://localhost:8000';
       const formData = new FormData();
       formData.append('image', file);
-      const response = await fetch('/api/ai/analyze-image', {
+      const response = await fetch(`${apiBase}/api/ai/analyze-image`, {
         method: 'POST',
         body: formData
       });
@@ -256,7 +258,8 @@
         user_severity: selectedLevel
       };
 
-      const response = await fetch('/api/sos', {
+      const apiBase = window.API_BASE || 'http://localhost:8000';
+      const response = await fetch(`${apiBase}/api/sos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sosPayload)
