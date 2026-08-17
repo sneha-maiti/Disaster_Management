@@ -212,7 +212,7 @@
   async function loadAndRenderBackendSosMarkers() {
     if (!map || !markersGroup) return;
     try {
-      const apiBase = window.API_BASE || 'http://localhost:8000';
+      const apiBase = window.API_BASE || 'https://disaster-management-backend-umtb.onrender.com';
       const response = await fetch(`${apiBase}/api/sos`);
       if (!response.ok) return;
       const result = await response.json();

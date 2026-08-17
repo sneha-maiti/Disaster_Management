@@ -644,7 +644,7 @@
            ========================================================================== */
 
         // ---- CONFIG: point this at your running backend ----
-        const API_BASE = "http://localhost:8000";
+        const API_BASE = window.API_BASE || "https://disaster-management-backend-umtb.onrender.com";
         const LOGIN_ENDPOINT = API_BASE + "/api/auth/login";
         const REDIRECT_ON_SUCCESS = "index.html";
         // ------------------------------------------------------

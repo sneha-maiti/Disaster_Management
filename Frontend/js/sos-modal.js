@@ -158,7 +158,7 @@
           }
 
           try {
-            const apiBase = window.API_BASE || 'http://localhost:8000';
+            const apiBase = window.API_BASE || 'https://disaster-management-backend-umtb.onrender.com';
             const res = await fetch(`${apiBase}/api/maps/reverse-geocode`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -219,7 +219,7 @@
 
   async function uploadImageToBackend(file) {
     try {
-      const apiBase = window.API_BASE || 'http://localhost:8000';
+      const apiBase = window.API_BASE || 'https://disaster-management-backend-umtb.onrender.com';
       const formData = new FormData();
       formData.append('image', file);
       const response = await fetch(`${apiBase}/api/ai/analyze-image`, {
@@ -258,7 +258,7 @@
         user_severity: selectedLevel
       };
 
-      const apiBase = window.API_BASE || 'http://localhost:8000';
+      const apiBase = window.API_BASE || 'https://disaster-management-backend-umtb.onrender.com';
       const response = await fetch(`${apiBase}/api/sos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
